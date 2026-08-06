@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.4</title>
+  <title>Phát thuốc Đông Y V1.8</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -66,16 +66,170 @@
       body.dispensing-focus .patient-name{font-size:20px}
       body.dispensing-focus th,body.dispensing-focus td{padding:10px 4px}
     }
+
+
+    /* ================= V1.7: phiếu con tức thời + công cụ thu gọn ================= */
+    .focus-controls-toggle{
+      display:none;
+      position:fixed;
+      top:4px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:4600;
+      width:48px;
+      height:30px;
+      min-height:30px;
+      padding:0;
+      border:1px solid #91b99a;
+      border-radius:0 0 16px 16px;
+      background:rgba(255,255,255,.97);
+      color:#1b5e20;
+      font-size:24px;
+      font-weight:900;
+      line-height:1;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 4px 14px rgba(25,72,36,.18);
+    }
+    body.dispensing-focus .focus-controls-toggle{display:flex}
+    body.dispensing-focus .detail-head{padding-top:34px!important}
+    body.dispensing-focus:not(.dispensing-controls-open) .detail-title-row{display:none!important}
+    body.dispensing-focus.dispensing-controls-open .detail-title-row{display:flex!important}
+    body.dispensing-focus.dispensing-controls-open .detail-config-row,
+    body.dispensing-focus.dispensing-controls-open .patient-picker-row{display:flex!important}
+    body.dispensing-focus.dispensing-controls-open #detailMeta{display:block!important}
+    body.dispensing-focus.dispensing-controls-open .detail-toolbar{
+      padding:10px!important;
+      border-radius:12px!important;
+    }
+    body.dispensing-focus #exitBatchSequenceButton{display:inline-flex!important}
+    body.dispensing-focus .sequence-nav{
+      flex-wrap:nowrap;
+      justify-content:space-between;
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    body.dispensing-focus .sequence-nav::-webkit-scrollbar{display:none}
+    body.dispensing-focus .sequence-nav .btn{
+      flex:1 1 auto;
+      min-width:0;
+      margin:0!important;
+      white-space:nowrap;
+    }
+    body.dispensing-focus .background-finish-panel{bottom:72px}
+    @media(max-width:760px){
+      body.dispensing-focus .detail-head{padding-top:31px!important}
+      .focus-controls-toggle{top:2px;width:44px;height:28px;min-height:28px;font-size:22px}
+      body.dispensing-focus .sequence-nav{gap:5px;padding:7px 4px}
+      body.dispensing-focus .sequence-nav .btn{font-size:13px!important;padding:8px 6px!important}
+      body.dispensing-focus #finishCurrentButton{flex:1.12 1 auto}
+      body.dispensing-focus #exitBatchSequenceButton{flex:1.18 1 auto}
+      body.dispensing-focus .background-finish-panel{bottom:67px}
+    }
+    /* ================= END V1.7 CSS ================= */
+
+    /* ================= V1.7: đăng nhập nhanh + mở phiếu nhanh ================= */
+    .quick-sync-status{
+      position:fixed;
+      top:8px;
+      right:8px;
+      z-index:5200;
+      display:none;
+      align-items:center;
+      gap:7px;
+      max-width:min(84vw,360px);
+      padding:8px 11px;
+      border:1px solid #b7d5bf;
+      border-radius:18px;
+      background:rgba(255,255,255,.97);
+      color:#245c35;
+      font-size:14px;
+      font-weight:800;
+      box-shadow:0 5px 18px rgba(31,91,48,.16);
+      pointer-events:none;
+    }
+    .quick-sync-status.show{display:flex}
+    .quick-sync-dot{
+      width:10px;height:10px;border-radius:50%;background:#2e7d32;
+      box-shadow:0 0 0 0 rgba(46,125,50,.38);
+      animation:dyQuickPulse 1.15s infinite;
+      flex:0 0 10px;
+    }
+    @keyframes dyQuickPulse{0%{box-shadow:0 0 0 0 rgba(46,125,50,.42)}70%{box-shadow:0 0 0 8px rgba(46,125,50,0)}100%{box-shadow:0 0 0 0 rgba(46,125,50,0)}}
+    .batch-card.opening-fast{outline:3px solid rgba(46,125,50,.18);outline-offset:2px}
+    @media(max-width:760px){
+      .quick-sync-status{top:5px;right:5px;font-size:13px;padding:7px 10px}
+      body.dispensing-focus .quick-sync-status{top:35px}
+      body.dispensing-focus #exitBatchSequenceButton{font-size:12.5px!important}
+    }
+    /* ================= END V1.7 FAST UX ================= */
+
+
+    /* ================= V1.8: nhãn trạng thái rõ hơn + menu mobile tự xuống dòng ================= */
+    #detailState{
+      font-size:16px;
+      line-height:1.2;
+      padding:7px 12px;
+      min-height:34px;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+    }
+    body.dispensing-focus #detailState{
+      font-size:18px;
+      padding:8px 14px;
+      min-height:38px;
+      box-shadow:0 2px 8px rgba(13,71,161,.12);
+    }
+    @media(max-width:760px){
+      .topbar{overflow:hidden}
+      .nav{
+        width:100%;
+        max-width:100%;
+        margin:8px 0 0 auto;
+        padding:0;
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:flex-end;
+        align-items:center;
+        gap:6px;
+        overflow-x:visible;
+        overflow-y:visible;
+      }
+      .nav button{
+        flex:0 0 auto;
+        max-width:100%;
+        white-space:normal;
+        text-align:center;
+        font-size:14px;
+        line-height:1.2;
+        padding:7px 10px;
+        min-height:36px;
+      }
+      #detailState{
+        font-size:16px;
+        padding:7px 11px;
+        min-height:36px;
+      }
+      body.dispensing-focus #detailState{
+        font-size:17px;
+        padding:8px 12px;
+        min-height:38px;
+      }
+    }
+    /* ================= END V1.8 UI ================= */
+
 </style>
 </head>
 <body>
+<div id="quickSyncStatus" class="quick-sync-status"><span class="quick-sync-dot"></span><span id="quickSyncText">Đang đồng bộ...</span></div>
 <div id="loginView" class="login-wrap">
   <div class="login-card">
     <div class="login-logo">🌿</div>
     <div class="login-title">PHÁT THUỐC ĐÔNG Y</div>
     <div class="muted" style="text-align:center">Kho Đông Y · Khoa Y học dân tộc</div>
-    <div class="field"><label>Tài khoản</label><input id="loginUsername" autocomplete="username" placeholder="Nhập tài khoản"></div>
-    <div class="field"><label>Mật khẩu</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu"></div>
+    <div class="field"><label>Tài khoản</label><input id="loginUsername" autocomplete="username" onfocus="prewarmBackend()" placeholder="Nhập tài khoản"></div>
+    <div class="field"><label>Mật khẩu</label><input id="loginPassword" type="password" autocomplete="current-password" onfocus="prewarmBackend()" placeholder="Nhập mật khẩu"></div>
     <button class="btn btn-green" onclick="login()">Đăng nhập</button>
     <div id="loginError" class="danger-text small" style="margin-top:10px;text-align:center"></div>
   </div>
@@ -95,14 +249,15 @@
 
   <main>
     <section id="page-batches" class="page">
-      <div class="panel row space"><div><h2 style="margin:0;color:var(--green2)">Danh sách đợt phát</h2><div class="muted small">Một đợt gồm nhiều phiếu bệnh nhân</div></div><button class="btn btn-green" onclick="refreshBatches()">🔄 Làm mới</button></div>
+      <div class="panel row space"><div><h2 style="margin:0;color:var(--green2)">Danh sách phiếu phát</h2><div class="muted small">Mỗi phiếu lớn gồm nhiều bệnh nhân; từng bệnh nhân là một phiếu con</div></div><button class="btn btn-green" onclick="refreshBatches()">🔄 Làm mới</button></div>
       <div id="batchList" class="batch-list"></div>
     </section>
 
     <section id="page-detail" class="page hidden">
+      <button id="focusControlsToggle" class="focus-controls-toggle" type="button" onclick="toggleDispensingControls()" aria-expanded="false" title="Hiện thông tin và công cụ phía trên">⌄</button>
       <div class="detail-head">
         <div class="detail-toolbar">
-          <div class="row space"><div><div id="detailTitle" class="batch-title"></div><div id="detailMeta" class="muted small"></div></div><span id="detailState" class="badge"></span></div>
+          <div class="row space detail-title-row"><div><div id="detailTitle" class="batch-title"></div><div id="detailMeta" class="muted small"></div></div><span id="detailState" class="badge"></span></div>
           <div class="row detail-config-row" style="margin-top:9px">
             <label>Số ngày chung:</label>
             <select id="dayCountSelect" class="day-select" onchange="changeDayCount()"></select>
@@ -121,8 +276,8 @@
       <div id="sequenceNav" class="sequence-nav hidden">
         <button class="btn btn-light" onclick="previousPatient()">← Trước</button>
         <button class="btn btn-blue" onclick="nextPatient()">Tiếp →</button>
-        <button id="finishCurrentButton" class="btn btn-green" onclick="finishCurrentVoucher()">✓ Chốt phiếu</button>
-        <button id="exitBatchSequenceButton" class="btn btn-red" onclick="requestExitBatch()">Lưu và thoát</button>
+        <button id="finishCurrentButton" class="btn btn-green" onclick="finishCurrentVoucher()" title="Chốt bệnh nhân hiện tại">✓ Chốt BN</button>
+        <button id="exitBatchSequenceButton" class="btn btn-red" onclick="requestExitBatch()" title="Lưu tiến độ và trở về danh sách phiếu">💾 Lưu và thoát</button>
       </div>
     </section>
 
@@ -166,10 +321,26 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_5';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_8';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
-const state={token:localStorage.getItem('DY_TOKEN')||'',user:null,settings:null,batches:[],batch:null,selectedPatient:'__all__',sequence:false,currentIndex:0,users:[],parsedImport:null,importTitleAuto:true,importDefaultTitle:''};
+const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_7';
+const DY_BOOTSTRAP_CACHE_KEY='DY_BOOTSTRAP_CACHE_V1_7';
+const DY_DETAIL_CACHE_PREFIX='DY_DETAIL_V1_7_';
+function readStoredAuth(){
+  try{
+    const raw=localStorage.getItem(DY_AUTH_STORAGE_KEY);
+    if(raw){const auth=JSON.parse(raw);if(auth&&auth.token&&(!auth.expiresAt||Number(auth.expiresAt)>Date.now()))return auth}
+  }catch(e){}
+  const legacy=localStorage.getItem('DY_TOKEN')||'';
+  return legacy?{token:legacy,expiresAt:0}:null
+}
+const initialAuth=readStoredAuth();
+const state={token:initialAuth?initialAuth.token:'',sessionExpiresAt:initialAuth?Number(initialAuth.expiresAt||0):0,user:null,settings:null,batches:[],batch:null,selectedPatient:'__all__',sequence:false,currentIndex:0,users:[],parsedImport:null,importTitleAuto:true,importDefaultTitle:''};
+const dyDetailMemoryCache=new Map();
+const dyDetailPrefetching=new Map();
+let dyWarmPromise=null;
+let quickStatusTimer=null;
 const $=id=>document.getElementById(id);
 let dyBridgeReady=false;
 let dyBridgeWindow=null;
@@ -199,7 +370,7 @@ function waitForDyBridge(timeoutMs=30000){
       if(dyBridgeReady&&dyBridgeWindow){clearInterval(timer);resolve();return}
       if(Date.now()-started>timeoutMs){
         clearInterval(timer);
-        reject(new Error('Không nhận được tín hiệu Bridge V1.5. Hãy mở trực tiếp URL /exec: nếu không thấy “API Bridge Đông Y V1.5 đang hoạt động”, hãy kiểm tra deployment và file Bridge.html.'))
+        reject(new Error('Không nhận được tín hiệu Bridge V1.7. Hãy mở trực tiếp URL /exec: nếu không thấy “API Bridge Đông Y V1.7 đang hoạt động”, hãy kiểm tra deployment và file Bridge.html.'))
       }
     },100)
   })
@@ -212,6 +383,7 @@ window.addEventListener('message',event=>{
     dyBridgeWindow=event.source;
     dyBridgeOrigin=event.origin;
     dyBridgeReady=true;
+    setTimeout(prewarmBackend,0);
     return;
   }
   if(message.type!=='DY_GAS_RESPONSE'||!message.id)return;
@@ -267,27 +439,124 @@ function hideLoading(token){
   if(text)text.textContent=messages[messages.length-1]||'Đang xử lý...';
 }
 
-async function gas(action,payload={}){
-  const loadingToken=showLoading(DY_LOADING_MESSAGES[action]||'Đang xử lý...');
+function showQuickStatus(message,duration=0){
+  const host=$('quickSyncStatus');
+  const text=$('quickSyncText');
+  if(!host||!text)return;
+  if(quickStatusTimer){clearTimeout(quickStatusTimer);quickStatusTimer=null}
+  text.textContent=message||'Đang đồng bộ...';
+  host.classList.add('show');
+  if(duration>0)quickStatusTimer=setTimeout(()=>host.classList.remove('show'),duration)
+}
+function hideQuickStatus(){
+  const host=$('quickSyncStatus');
+  if(quickStatusTimer){clearTimeout(quickStatusTimer);quickStatusTimer=null}
+  if(host)host.classList.remove('show')
+}
+async function gas(action,payload={},options={}){
+  const silent=options&&options.silent===true;
+  const loadingToken=silent?'':showLoading(options.message||DY_LOADING_MESSAGES[action]||'Đang xử lý...');
   try{
     if(!DY_GAS_WEB_APP_URL||DY_GAS_WEB_APP_URL.includes('PASTE_YOUR_')){
       throw new Error('Chưa cấu hình URL Apps Script trong DY_GAS_WEB_APP_URL.');
     }
-    await waitForDyBridge();
+    await waitForDyBridge(options.bridgeTimeoutMs||30000);
     const id='DY_REQ_'+Date.now()+'_'+(++dyRequestCounter);
     return await new Promise((resolve,reject)=>{
       const timeout=setTimeout(()=>{
         dyPendingRequests.delete(id);
         reject(new Error('Yêu cầu máy chủ quá thời gian chờ.'))
-      },30000);
+      },options.timeoutMs||30000);
       dyPendingRequests.set(id,{resolve,reject,timeout});
       dyBridgeWindow.postMessage({
         type:'DY_GAS_REQUEST',id,action,payload,token:state.token
       },dyBridgeOrigin)
     })
   }finally{
-    hideLoading(loadingToken)
+    if(loadingToken)hideLoading(loadingToken)
   }
+}
+function prewarmBackend(){
+  if(dyWarmPromise)return dyWarmPromise;
+  dyWarmPromise=gas('warmup',{}, {silent:true,timeoutMs:45000})
+    .catch(()=>null)
+    .finally(()=>{setTimeout(()=>{dyWarmPromise=null},15000)});
+  return dyWarmPromise
+}
+function persistAuth(res){
+  state.token=String(res&&res.token||state.token||'');
+  state.sessionExpiresAt=Number(res&&res.sessionExpiresAt||state.sessionExpiresAt||0);
+  if(state.token){
+    localStorage.setItem('DY_TOKEN',state.token);
+    localStorage.setItem(DY_AUTH_STORAGE_KEY,JSON.stringify({token:state.token,expiresAt:state.sessionExpiresAt||0,user:res&&res.user?res.user:null}))
+  }
+}
+function readBootstrapCache(){
+  try{
+    const raw=localStorage.getItem(DY_BOOTSTRAP_CACHE_KEY);
+    if(!raw)return null;
+    const cached=JSON.parse(raw);
+    if(!cached||!cached.user||!Array.isArray(cached.batches))return null;
+    if(Date.now()-Number(cached.savedAt||0)>12*60*60*1000)return null;
+    return cached
+  }catch(e){return null}
+}
+function saveBootstrapCache(){
+  if(!state.user)return;
+  try{localStorage.setItem(DY_BOOTSTRAP_CACHE_KEY,JSON.stringify({savedAt:Date.now(),user:state.user,settings:state.settings,batches:state.batches||[],users:state.users||[]}))}catch(e){}
+}
+function applyBootstrapPayload(res,{cached=false}={}){
+  state.user=res.user;
+  state.settings=res.settings||state.settings||{warehouseName:'Kho Đông Y',departmentName:'Khoa Y học dân tộc'};
+  state.batches=res.batches||[];
+  state.users=res.users||[];
+  $('loginView').classList.add('hidden');
+  $('appView').classList.remove('hidden');
+  $('userPill').textContent=`${state.user.displayName} · ${state.user.role==='admin'?'Admin':'Người phát'}`;
+  $('headerSubtitle').textContent=`${state.settings.warehouseName} · ${state.settings.departmentName}`;
+  document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',state.user.role!=='admin'));
+  renderBatches();
+  renderUsers();
+  showPage('batches');
+  if(!cached)saveBootstrapCache();
+  scheduleBatchPrefetch()
+}
+function detailCacheKey(id){return DY_DETAIL_CACHE_PREFIX+String(state.user&&state.user.username||'anon')+'_'+id}
+function readBatchDetailCache(id){
+  const card=(state.batches||[]).find(x=>String(x.batchId)===String(id));
+  let entry=dyDetailMemoryCache.get(String(id));
+  if(!entry){
+    try{const raw=sessionStorage.getItem(detailCacheKey(id));if(raw)entry=JSON.parse(raw)}catch(e){}
+  }
+  if(!entry||!entry.batch)return null;
+  if(Date.now()-Number(entry.savedAt||0)>10*60*1000)return null;
+  if(card&&Number(card.version||0)>Number(entry.version||0))return null;
+  dyDetailMemoryCache.set(String(id),entry);
+  return entry.batch
+}
+function writeBatchDetailCache(batch){
+  if(!batch||!batch.batchId)return;
+  const entry={savedAt:Date.now(),version:Number(batch.version||0),batch};
+  dyDetailMemoryCache.set(String(batch.batchId),entry);
+  try{sessionStorage.setItem(detailCacheKey(batch.batchId),JSON.stringify(entry))}catch(e){}
+}
+function prefetchBatch(id){
+  id=String(id||'');
+  if(!id||!state.token||readBatchDetailCache(id))return Promise.resolve(null);
+  if(dyDetailPrefetching.has(id))return dyDetailPrefetching.get(id);
+  const promise=gas('getBatch',{batchId:id},{silent:true,timeoutMs:45000})
+    .then(r=>{if(r&&r.batch)writeBatchDetailCache(r.batch);return r&&r.batch||null})
+    .catch(()=>null)
+    .finally(()=>dyDetailPrefetching.delete(id));
+  dyDetailPrefetching.set(id,promise);
+  return promise
+}
+function scheduleBatchPrefetch(){
+  if(!state.token||!Array.isArray(state.batches))return;
+  const candidates=[...state.batches]
+    .sort((a,b)=>{const rank=x=>x.state==='PROGRESS'?0:x.state==='WAITING'?1:2;return rank(a)-rank(b)})
+    .slice(0,4);
+  candidates.forEach((b,i)=>setTimeout(()=>prefetchBatch(b.batchId),220+i*260))
 }
 function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function norm(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().trim()}
@@ -297,12 +566,47 @@ function fmtQty(n){const x=Number(n)||0;return Number.isInteger(x)?String(x):x.t
 function stateLabel(s){return({WAITING:'Chờ phát',PROGRESS:'Đang phát',DONE:'Đã phát',AUTO_DONE:'Đã xử lý',NONE:'Không có'})[s]||s}
 function toast(msg,type=''){const el=$('toast');el.textContent=msg;el.className='toast '+type;setTimeout(()=>el.classList.add('hidden'),3500)}
 function confirmBox(title,message,yes='Đồng ý',no='Hủy'){return new Promise(resolve=>{const host=$('modalHost');host.innerHTML=`<div class="modal-backdrop"><div class="modal"><h2>${esc(title)}</h2><div style="white-space:pre-line;line-height:1.5">${esc(message)}</div><div class="row right" style="justify-content:flex-end;margin-top:18px"><button class="btn btn-light" id="confirmNo">${esc(no)}</button><button class="btn btn-green" id="confirmYes">${esc(yes)}</button></div></div></div>`;$('confirmNo').onclick=()=>{host.innerHTML='';resolve(false)};$('confirmYes').onclick=()=>{host.innerHTML='';resolve(true)}})}
-async function login(){try{$('loginError').textContent='';const res=await gas('login',{username:$('loginUsername').value,password:$('loginPassword').value});state.token=res.token;localStorage.setItem('DY_TOKEN',state.token);await bootstrap()}catch(e){$('loginError').textContent=e.message}}
-async function bootstrap(){try{const res=await gas('bootstrap');state.user=res.user;state.settings=res.settings;state.batches=res.batches||[];state.users=res.users||[];$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('userPill').textContent=`${state.user.displayName} · ${state.user.role==='admin'?'Admin':'Người phát'}`;$('headerSubtitle').textContent=`${state.settings.warehouseName} · ${state.settings.departmentName}`;document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',state.user.role!=='admin'));renderBatches();renderUsers();showPage('batches')}catch(e){forceLogout();$('loginError').textContent=e.message}}
-function forceLogout(){state.token='';localStorage.removeItem('DY_TOKEN');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden')}
+async function login(){
+  try{
+    $('loginError').textContent='';
+    const username=$('loginUsername').value.trim();
+    const password=$('loginPassword').value;
+    if(!username||!password){$('loginError').textContent='Vui lòng nhập tài khoản và mật khẩu.';return}
+    const res=await gas('login',{username,password},{message:'Đang đăng nhập...'});
+    persistAuth(res);
+    $('loginPassword').value='';
+    applyBootstrapPayload(res);
+    refreshBatches(true)
+  }catch(e){$('loginError').textContent=e.message}
+}
+async function bootstrap(){
+  const cached=readBootstrapCache();
+  if(cached){
+    applyBootstrapPayload(cached,{cached:true});
+    showQuickStatus('Đang xác thực và đồng bộ dữ liệu...')
+  }
+  try{
+    const res=await gas('bootstrap',{},cached?{silent:true,timeoutMs:45000}:{message:'Đang tải dữ liệu...'});
+    applyBootstrapPayload(res);
+    hideQuickStatus();
+    refreshBatches(true)
+  }catch(e){
+    hideQuickStatus();
+    forceLogout();
+    $('loginError').textContent=e.message
+  }
+}
+function forceLogout(){
+  state.token='';state.sessionExpiresAt=0;state.user=null;state.batch=null;
+  localStorage.removeItem('DY_TOKEN');
+  localStorage.removeItem(DY_AUTH_STORAGE_KEY);
+  localStorage.removeItem(DY_BOOTSTRAP_CACHE_KEY);
+  $('appView').classList.add('hidden');$('loginView').classList.remove('hidden');
+  hideQuickStatus()
+}
 async function logout(){try{await gas('logout')}catch(e){}forceLogout()}
 function showPage(name){document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));const page=$('page-'+name);if(page)page.classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(name==='audit')loadAudit();if(name==='users')renderUsers();if(name==='import')prepareImportPage()}
-async function refreshBatches(silent=false){try{const r=await gas('listBatches');state.batches=r.batches||[];renderBatches();if(!silent)toast('Đã làm mới','success')}catch(e){toast(e.message,'error')}}
+async function refreshBatches(silent=false){try{const r=await gas('listBatches',{},silent?{silent:true,timeoutMs:45000}:{});state.batches=r.batches||[];renderBatches();saveBootstrapCache();scheduleBatchPrefetch();if(!silent)toast('Đã làm mới','success')}catch(e){if(!silent)toast(e.message,'error')}}
 async function prepareImportPage(force=false){
   if(!state.user||state.user.role!=='admin')return;
   const input=$('importTitle');
@@ -319,13 +623,79 @@ function markImportTitleEdited(){
   const value=$('importTitle').value.trim();
   state.importTitleAuto=value===''||value===state.importDefaultTitle;
 }
-function renderBatches(){const el=$('batchList');if(!state.batches.length){el.innerHTML='<div class="panel empty">Chưa có đợt phát. Admin vào “Nạp phiếu” để tạo đợt đầu tiên.</div>';return}el.innerHTML=state.batches.map(b=>{const pct=b.totalPatients?Math.round(b.completedPatients*100/b.totalPatients):0;return `<div class="batch-card ${esc(b.state)}"><div class="row space"><div class="grow"><div class="batch-title">${esc(b.title)}</div><div class="muted">${fmtDate(b.dateFrom)}${b.dateTo&&b.dateTo!==b.dateFrom?' – '+fmtDate(b.dateTo):''}</div></div><span class="badge ${esc(b.state)}">${stateLabel(b.state)}</span></div><div class="row small" style="margin:10px 0"><b>Số ngày chung: ${b.dayCount}</b><span>·</span><span>${b.completedPatients}/${b.totalPatients} bệnh nhân</span>${b.separatedState!=='NONE'?`<span>· Phiếu tách: ${stateLabel(b.separatedState)}</span>`:''}</div><div class="progress"><span style="width:${pct}%"></span></div><div class="row" style="margin-top:11px"><button class="btn btn-green" onclick="openBatch('${esc(b.batchId)}')">Mở đợt phát</button>${state.user&&state.user.role==='admin'?`<button class="btn btn-light" onclick="resetBatch('${esc(b.batchId)}')">Đặt lại</button><button class="btn btn-red right" onclick="deleteBatch('${esc(b.batchId)}')">Xóa</button>`:''}</div></div>`}).join('')}
-async function openBatch(id){try{const r=await gas('getBatch',{batchId:id});state.batch=r.batch;state.selectedPatient='__all__';state.sequence=false;state.currentIndex=0;showPage('detail');renderDetail()}catch(e){toast(e.message,'error')}}
-function renderDetail(){const b=state.batch;if(!b)return;$('detailTitle').textContent=b.title;$('detailMeta').textContent=`${fmtDate(b.dateFrom)}${b.dateTo&&b.dateTo!==b.dateFrom?' – '+fmtDate(b.dateTo):''} · ${b.totalPatients} bệnh nhân`;$('detailState').className='badge '+b.state;$('detailState').textContent=stateLabel(b.state);$('dayCountSelect').innerHTML=Array.from({length:10},(_,i)=>`<option value="${i+1}" ${b.dayCount===i+1?'selected':''}>${i+1} ngày</option>`).join('');const configurable=b.state==='WAITING'&&!hasAnyDispensed(b);$('dayCountSelect').disabled=!configurable;$('herbButton').disabled=!configurable;$('startButton').disabled=b.state==='DONE';const pct=b.totalPatients?Math.round(b.completedPatients*100/b.totalPatients):0;$('progressText').textContent=`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân`;$('progressBar').style.width=pct+'%';buildPatientOptions();renderDetailContent();$('sequenceNav').classList.toggle('hidden',!state.sequence);$('finishCurrentButton').textContent=state.selectedPatient==='__separated__'?'✓ Chốt phiếu vị thuốc':'✓ Chốt phiếu bệnh nhân'}
+function renderBatches(){
+  const el=$('batchList');
+  if(!state.batches.length){el.innerHTML='<div class="panel empty">Chưa có đợt phát. Admin vào “Nạp phiếu” để tạo đợt đầu tiên.</div>';return}
+  el.innerHTML=state.batches.map(b=>{
+    const pct=b.totalPatients?Math.round(b.completedPatients*100/b.totalPatients):0;
+    return `<div id="batch-card-${esc(b.batchId)}" class="batch-card ${esc(b.state)}"><div class="row space"><div class="grow"><div class="batch-title">${esc(b.title)}</div><div class="muted">${fmtDate(b.dateFrom)}${b.dateTo&&b.dateTo!==b.dateFrom?' – '+fmtDate(b.dateTo):''}</div></div><span class="badge ${esc(b.state)}">${stateLabel(b.state)}</span></div><div class="row small" style="margin:10px 0"><b>Số ngày chung: ${b.dayCount}</b><span>·</span><span>${b.completedPatients}/${b.totalPatients} bệnh nhân</span>${b.separatedState!=='NONE'?`<span>· Phiếu tách: ${stateLabel(b.separatedState)}</span>`:''}</div><div class="progress"><span style="width:${pct}%"></span></div><div class="row" style="margin-top:11px"><button class="btn btn-green" onpointerenter="prefetchBatch('${esc(b.batchId)}')" onpointerdown="prefetchBatch('${esc(b.batchId)}')" onclick="openBatch('${esc(b.batchId)}')">Mở phiếu phát</button>${state.user&&state.user.role==='admin'?`<button class="btn btn-light" onclick="resetBatch('${esc(b.batchId)}')">Đặt lại</button><button class="btn btn-red right" onclick="deleteBatch('${esc(b.batchId)}')">Xóa</button>`:''}</div></div>`
+  }).join('');
+  scheduleBatchPrefetch()
+}
+function applyOpenedBatch(batch,{preservePosition=false}={}){
+  const oldSelected=state.selectedPatient;
+  const oldSequence=state.sequence;
+  const oldIndex=state.currentIndex;
+  state.batch=batch;
+  if(preservePosition){
+    state.selectedPatient=oldSelected;
+    state.sequence=oldSequence;
+    state.currentIndex=oldIndex
+  }else{
+    state.selectedPatient='__all__';state.sequence=false;state.currentIndex=0
+  }
+  showPage('detail');renderDetail();writeBatchDetailCache(batch)
+}
+async function refreshOpenedBatch(id){
+  try{
+    const cached=readBatchDetailCache(id);
+    const currentVersion=Number(cached&&cached.version||0);
+    const r=await gas('getBatchDelta',{batchId:id,version:currentVersion},{silent:true,timeoutMs:45000});
+    if(!r)return;
+    if(r.deleted){
+      dyDetailMemoryCache.delete(String(id));
+      try{sessionStorage.removeItem(detailCacheKey(id))}catch(e){}
+      if(state.batch&&String(state.batch.batchId)===String(id)){
+        state.batch=null;state.sequence=false;showPage('batches');toast('Phiếu không còn tồn tại.','error')
+      }
+      return
+    }
+    if(!r.changed)return;
+    if(r.batch){
+      writeBatchDetailCache(r.batch);
+      if(state.batch&&String(state.batch.batchId)===String(id))applyOpenedBatch(r.batch,{preservePosition:true})
+    }
+  }catch(e){toast('Không đồng bộ được phiếu: '+e.message,'error')}
+  finally{hideQuickStatus()}
+}
+async function openBatch(id){
+  id=String(id||'');
+  const card=$('batch-card-'+id);if(card)card.classList.add('opening-fast');
+  const cached=readBatchDetailCache(id);
+  try{
+    if(cached){
+      applyOpenedBatch(cached);
+      showQuickStatus('Đang đồng bộ phiếu mới nhất...');
+      refreshOpenedBatch(id);
+      return
+    }
+    const pending=dyDetailPrefetching.get(id);
+    if(pending){
+      showQuickStatus('Đang mở phiếu...');
+      const prefetched=await pending;
+      hideQuickStatus();
+      if(prefetched){applyOpenedBatch(prefetched);refreshOpenedBatch(id);return}
+    }
+    const r=await gas('getBatch',{batchId:id},{message:'Đang mở phiếu...'});
+    applyOpenedBatch(r.batch)
+  }catch(e){toast(e.message,'error')}
+  finally{if(card)card.classList.remove('opening-fast')}
+}
+function renderDetail(){const b=state.batch;if(!b)return;$('detailTitle').textContent=b.title;$('detailMeta').textContent=`${fmtDate(b.dateFrom)}${b.dateTo&&b.dateTo!==b.dateFrom?' – '+fmtDate(b.dateTo):''} · ${b.totalPatients} bệnh nhân`;$('detailState').className='badge '+b.state;$('detailState').textContent=stateLabel(b.state);$('dayCountSelect').innerHTML=Array.from({length:10},(_,i)=>`<option value="${i+1}" ${b.dayCount===i+1?'selected':''}>${i+1} ngày</option>`).join('');const configurable=b.state==='WAITING'&&!hasAnyDispensed(b);$('dayCountSelect').disabled=!configurable;$('herbButton').disabled=!configurable;$('startButton').disabled=b.state==='DONE';const pct=b.totalPatients?Math.round(b.completedPatients*100/b.totalPatients):0;$('progressText').textContent=`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân`;$('progressBar').style.width=pct+'%';buildPatientOptions();renderDetailContent();$('sequenceNav').classList.toggle('hidden',!state.sequence);$('finishCurrentButton').textContent=state.selectedPatient==='__separated__'?'✓ Chốt phiếu tách':'✓ Chốt BN';writeBatchDetailCache(b)}
 function hasAnyDispensed(b){return b.patients.some(p=>p.items.some(i=>i.dispensed))||b.separatedItems.some(i=>i.dispensed)||b.patients.some(p=>p.state==='PROGRESS')||b.separatedState==='PROGRESS'}
 function buildPatientOptions(){const b=state.batch;const q=norm($('patientSearch').value);let opts=[`<option value="__all__">Tất cả bệnh nhân</option>`];if(b.separatedItems.length)opts.push(`<option value="__separated__">PHIẾU VỊ THUỐC TÁCH RIÊNG</option>`);b.patients.filter(p=>!q||norm(p.patientName+' '+p.patientCode+' '+p.room+' '+p.bed).includes(q)).forEach(p=>opts.push(`<option value="${esc(p.voucherId)}">${esc(p.patientName)} – ${esc(p.patientCode)} [${stateLabel(p.state)}]</option>`));$('patientSelect').innerHTML=opts.join('');if([...$('patientSelect').options].some(o=>o.value===state.selectedPatient))$('patientSelect').value=state.selectedPatient;else{state.selectedPatient='__all__';$('patientSelect').value='__all__'}}
 function filterPatientOptions(){buildPatientOptions()}
-function changePatientSelection(){state.selectedPatient=$('patientSelect').value;state.sequence=state.selectedPatient!=='__all__';renderDetailContent();$('sequenceNav').classList.toggle('hidden',!state.sequence);$('finishCurrentButton').textContent=state.selectedPatient==='__separated__'?'✓ Chốt phiếu vị thuốc':'✓ Chốt phiếu bệnh nhân'}
+function changePatientSelection(){state.selectedPatient=$('patientSelect').value;state.sequence=state.selectedPatient!=='__all__';renderDetailContent();$('sequenceNav').classList.toggle('hidden',!state.sequence);$('finishCurrentButton').textContent=state.selectedPatient==='__separated__'?'✓ Chốt phiếu tách':'✓ Chốt BN'}
 function renderDetailContent(){const b=state.batch;const el=$('detailContent');if(state.selectedPatient==='__all__'){let html='';if(b.separatedItems.length)html+=renderSeparatedCard(false);html+=`<div class="all-cards">${b.patients.map(p=>renderPatientCard(p,false)).join('')}</div>`;el.innerHTML=html||'<div class="panel empty">Không có phiếu.</div>';return}if(state.selectedPatient==='__separated__'){el.innerHTML=renderSeparatedCard(true);return}const p=b.patients.find(x=>x.voucherId===state.selectedPatient);el.innerHTML=p?renderPatientCard(p,true):'<div class="panel empty">Không tìm thấy bệnh nhân.</div>'}
 function renderPatientCard(p,interactive){const active=p.items.filter(i=>!i.isSeparated);const rows=active.length?active.map((it,i)=>`<tr class="item-row ${it.dispensed?'done':''}" ${interactive&&p.state!=='DONE'&&p.state!=='AUTO_DONE'?`onclick="togglePatientItem('${esc(it.itemId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} onclick="event.stopPropagation();togglePatientItem('${esc(it.itemId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalQty)}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">Toàn bộ vị thuốc đã chuyển sang phiếu tách riêng.</td></tr>`;return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span>${p.room?`<span><b>Phòng:</b> ${esc(p.room)}</span>`:''}${p.bed?`<span><b>Giường:</b> ${esc(p.bed)}</span>`:''}</div></div><span class="badge ${esc(p.state)}">${stateLabel(p.state)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
 function renderSeparatedCard(interactive){const b=state.batch;const rows=b.separatedItems.map((it,i)=>`<tr class="item-row ${it.dispensed?'done':''}" ${interactive&&b.separatedState!=='DONE'?`onclick="toggleSeparatedItem('${esc(it.separatedId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} onclick="event.stopPropagation();toggleSeparatedItem('${esc(it.separatedId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalTotal)}</td></tr>`).join('');return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div><span class="badge ${esc(b.separatedState)}">${stateLabel(b.separatedState)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Tổng số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
@@ -545,7 +915,7 @@ async function dyProcessFinishQueue(){
     dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);
     await refreshBatches(true);
     if(state.batch)renderDetail();renderBatches();
-    if(job.kind==='patient')toast(`Đã chốt nền phiếu ${job.patientName||''}`.trim(),'success');
+    if(job.kind==='patient')toast(`Đã chốt nền bệnh nhân ${job.patientName||''}`.trim(),'success');
     if(job.kind==='batch')toast('Đã hoàn thành đợt phát','success')
   }catch(e){
     job.attempts=Number(job.attempts||0)+1;job.status=job.attempts>=8?'error':'pending';job.lastError=e.message;job.nextAttemptAt=Date.now()+Math.min(15000,900+job.attempts*1200);
@@ -560,7 +930,7 @@ function dyUpdateFinishPanel(){
   const failed=state.finishQueue.filter(j=>j.status==='error').length;
   el.classList.remove('hidden');el.classList.toggle('error',failed>0);
   el.onclick=failed?retryBackgroundFinishes:null;
-  el.textContent=failed?`⚠ ${failed} phiếu chốt nền chưa thành công. Bấm để thử lại.`:`⏳ Đang chốt nền ${state.finishQueue.length} phiếu. Bạn có thể tiếp tục phát.`
+  el.textContent=failed?`⚠ ${failed} bệnh nhân/phiếu chưa chốt nền thành công. Bấm để thử lại.`:`⏳ Đang xử lý nền ${state.finishQueue.length} bệnh nhân/phiếu. Bạn có thể tiếp tục phát.`
 }
 function retryBackgroundFinishes(){state.finishQueue.forEach(j=>{j.status='pending';j.attempts=0;j.nextAttemptAt=0});dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);dyUpdateFinishPanel();dyScheduleFinishWorker(30)}
 
@@ -611,6 +981,112 @@ window.addEventListener('online',()=>{dyScheduleItemBatch(20);dyScheduleFinishWo
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){dyScheduleItemBatch(20);dyScheduleFinishWorker(50)}});
 window.addEventListener('beforeunload',()=>{dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue)});
 /* ================= END V1.5 ================= */
+
+
+
+/* ================= V1.7 INSTANT SUB-VOUCHER NAVIGATION / EXPANDABLE CONTROLS ================= */
+Object.assign(state,{dispensingControlsOpen:false});
+
+function dySyncFocusControlsToggle(){
+  const btn=$('focusControlsToggle');
+  if(!btn)return;
+  const focus=document.body.classList.contains('dispensing-focus');
+  const opened=focus&&document.body.classList.contains('dispensing-controls-open');
+  btn.textContent=opened?'⌃':'⌄';
+  btn.setAttribute('aria-expanded',opened?'true':'false');
+  btn.title=opened?'Ẩn thông tin và công cụ phía trên':'Hiện thông tin và công cụ phía trên';
+}
+function toggleDispensingControls(force){
+  if(!document.body.classList.contains('dispensing-focus'))return;
+  const next=typeof force==='boolean'?force:!document.body.classList.contains('dispensing-controls-open');
+  state.dispensingControlsOpen=next;
+  document.body.classList.toggle('dispensing-controls-open',next);
+  dySyncFocusControlsToggle();
+}
+
+const dyApplyDispensingFocusV15=dyApplyDispensingFocus;
+dyApplyDispensingFocus=function(){
+  dyApplyDispensingFocusV15();
+  const focus=document.body.classList.contains('dispensing-focus');
+  if(!focus){
+    state.dispensingControlsOpen=false;
+    document.body.classList.remove('dispensing-controls-open');
+  }else{
+    document.body.classList.toggle('dispensing-controls-open',!!state.dispensingControlsOpen);
+  }
+  dySyncFocusControlsToggle();
+};
+
+const dyForceLogoutV15=forceLogout;
+forceLogout=function(){
+  state.dispensingControlsOpen=false;
+  document.body.classList.remove('dispensing-controls-open');
+  dyForceLogoutV15();
+};
+
+const dyShowPageV15=showPage;
+showPage=function(name){
+  if(name!=='detail'){
+    state.dispensingControlsOpen=false;
+    document.body.classList.remove('dispensing-controls-open');
+  }
+  dyShowPageV15(name);
+  dySyncFocusControlsToggle();
+};
+
+function dyMarkPatientOpenedLocally(p){
+  if(!p||['DONE','AUTO_DONE'].includes(p.state))return;
+  if(p.state==='WAITING')p.state='PROGRESS';
+  if(state.batch&&state.batch.state!=='DONE')state.batch.state='PROGRESS';
+}
+
+openPatient=function(id){
+  if(!state.batch)return;
+  const p=state.batch.patients.find(x=>x.voucherId===id);
+  if(!p)return;
+  state.selectedPatient=id;
+  state.sequence=true;
+  state.currentIndex=Math.max(0,state.batch.patients.indexOf(p));
+  dyMarkPatientOpenedLocally(p);
+  const select=$('patientSelect');if(select)select.value=id;
+  renderDetail();
+  if(p._startRequestPending||['DONE','AUTO_DONE'].includes(p.state))return;
+  p._startRequestPending=true;
+  gas('startPatient',{voucherId:id},{silent:true,timeoutMs:16000})
+    .catch(e=>toast('Không ghi được trạng thái mở bệnh nhân: '+e.message,'error'))
+    .finally(()=>{p._startRequestPending=false});
+};
+
+openSeparated=function(){
+  if(!state.batch)return;
+  state.selectedPatient='__separated__';
+  state.sequence=true;
+  if(state.batch.separatedState!=='DONE')state.batch.separatedState='PROGRESS';
+  if(state.batch.state!=='DONE')state.batch.state='PROGRESS';
+  const select=$('patientSelect');if(select)select.value='__separated__';
+  renderDetail();
+  if(state.batch._separatedStartPending||state.batch.separatedState==='DONE')return;
+  state.batch._separatedStartPending=true;
+  const activeBatch=state.batch;
+  gas('startSeparated',{batchId:activeBatch.batchId},{silent:true,timeoutMs:16000})
+    .catch(e=>toast('Không ghi được trạng thái mở phiếu vị thuốc: '+e.message,'error'))
+    .finally(()=>{activeBatch._separatedStartPending=false});
+};
+
+const dyRenderDetailV15=renderDetail;
+renderDetail=function(){
+  dyRenderDetailV15();
+  const btn=$('finishCurrentButton');
+  if(btn){
+    const separated=state.selectedPatient==='__separated__';
+    btn.textContent=separated?'✓ Chốt phiếu tách':'✓ Chốt BN';
+    btn.title=separated?'Chốt phiếu vị thuốc tách riêng':'Chốt bệnh nhân hiện tại';
+  }
+  const exit=$('exitBatchSequenceButton');
+  if(exit){exit.textContent='💾 Lưu và thoát';exit.title='Lưu tiến độ và trở về danh sách phiếu';}
+  dySyncFocusControlsToggle();
+};
+/* ================= END V1.7 ================= */
 
 window.addEventListener('load',()=>{
   startDyBridge();
