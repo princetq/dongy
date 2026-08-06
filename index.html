@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.10</title>
+  <title>Phát thuốc Đông Y V1.11</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -238,7 +238,7 @@
     /* ================= END V1.9 UI ================= */
 
 
-    /* ================= V1.10: tên vị thuốc mobile lớn hơn + nút mở công cụ cạnh tiến trình ================= */
+    /* ================= V1.11: tên vị thuốc mobile lớn hơn + nút mở công cụ cạnh tiến trình ================= */
     .detail-progress-row{flex-wrap:nowrap}
     .detail-progress-row .progress{min-width:64px}
     @media(max-width:760px){
@@ -253,7 +253,38 @@
       .detail-progress-row .counter{font-size:16px;line-height:1.2;flex:0 1 auto}
       .detail-progress-row .progress{flex:1 1 70px;min-width:54px}
     }
-    /* ================= END V1.10 UI ================= */
+    /* ================= END V1.11 UI ================= */
+
+
+
+    /* ================= V1.11: mobile tên thuốc/số lượng 20px, viết tắt ĐV/SL, căn giữa tiêu đề ================= */
+    .mobile-th-label{display:none}
+    .patient-card .patient-body thead th{
+      text-align:center !important;
+      vertical-align:middle !important;
+    }
+    @media(max-width:760px){
+      .patient-card .patient-body tbody td:nth-child(2){
+        font-size:20px !important;
+        line-height:1.25 !important;
+        font-weight:800;
+      }
+      .patient-card .patient-body tbody td.qty{
+        font-size:20px !important;
+        line-height:1.25 !important;
+        font-weight:900;
+      }
+      .patient-card .patient-body thead th{
+        text-align:center !important;
+        vertical-align:middle !important;
+      }
+      .patient-card .patient-body thead th.qty{
+        text-align:center !important;
+      }
+      .patient-card .desktop-th-label{display:none}
+      .patient-card .mobile-th-label{display:inline}
+    }
+    /* ================= END V1.11 UI ================= */
 
 </style>
 </head>
@@ -356,7 +387,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_10';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_11';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_7';
@@ -732,8 +763,8 @@ function buildPatientOptions(){const b=state.batch;const q=norm($('patientSearch
 function filterPatientOptions(){buildPatientOptions()}
 function changePatientSelection(){state.selectedPatient=$('patientSelect').value;state.sequence=state.selectedPatient!=='__all__';renderDetailContent();$('sequenceNav').classList.toggle('hidden',!state.sequence);$('finishCurrentButton').textContent=state.selectedPatient==='__separated__'?'✓ Chốt phiếu tách':'✓ Chốt BN'}
 function renderDetailContent(){const b=state.batch;const el=$('detailContent');if(state.selectedPatient==='__all__'){let html='';if(b.separatedItems.length)html+=renderSeparatedCard(false);html+=`<div class="all-cards">${b.patients.map(p=>renderPatientCard(p,false)).join('')}</div>`;el.innerHTML=html||'<div class="panel empty">Không có phiếu.</div>';return}if(state.selectedPatient==='__separated__'){el.innerHTML=renderSeparatedCard(true);return}const p=b.patients.find(x=>x.voucherId===state.selectedPatient);el.innerHTML=p?renderPatientCard(p,true):'<div class="panel empty">Không tìm thấy bệnh nhân.</div>'}
-function renderPatientCard(p,interactive){const active=p.items.filter(i=>!i.isSeparated);const rows=active.length?active.map((it,i)=>`<tr class="item-row ${it.dispensed?'done':''}" ${interactive&&p.state!=='DONE'&&p.state!=='AUTO_DONE'?`onclick="togglePatientItem('${esc(it.itemId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} onclick="event.stopPropagation();togglePatientItem('${esc(it.itemId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalQty)}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">Toàn bộ vị thuốc đã chuyển sang phiếu tách riêng.</td></tr>`;return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span>${p.room?`<span><b>Phòng:</b> ${esc(p.room)}</span>`:''}${p.bed?`<span><b>Giường:</b> ${esc(p.bed)}</span>`:''}</div></div><span class="badge ${esc(p.state)}">${stateLabel(p.state)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
-function renderSeparatedCard(interactive){const b=state.batch;const rows=b.separatedItems.map((it,i)=>`<tr class="item-row ${it.dispensed?'done':''}" ${interactive&&b.separatedState!=='DONE'?`onclick="toggleSeparatedItem('${esc(it.separatedId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} onclick="event.stopPropagation();toggleSeparatedItem('${esc(it.separatedId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalTotal)}</td></tr>`).join('');return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div><span class="badge ${esc(b.separatedState)}">${stateLabel(b.separatedState)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Tổng số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
+function renderPatientCard(p,interactive){const active=p.items.filter(i=>!i.isSeparated);const rows=active.length?active.map((it,i)=>`<tr class="item-row ${it.dispensed?'done':''}" ${interactive&&p.state!=='DONE'&&p.state!=='AUTO_DONE'?`onclick="togglePatientItem('${esc(it.itemId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} onclick="event.stopPropagation();togglePatientItem('${esc(it.itemId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalQty)}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">Toàn bộ vị thuốc đã chuyển sang phiếu tách riêng.</td></tr>`;return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span>${p.room?`<span><b>Phòng:</b> ${esc(p.room)}</span>`:''}${p.bed?`<span><b>Giường:</b> ${esc(p.bed)}</span>`:''}</div></div><span class="badge ${esc(p.state)}">${stateLabel(p.state)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
+function renderSeparatedCard(interactive){const b=state.batch;const rows=b.separatedItems.map((it,i)=>`<tr class="item-row ${it.dispensed?'done':''}" ${interactive&&b.separatedState!=='DONE'?`onclick="toggleSeparatedItem('${esc(it.separatedId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} onclick="event.stopPropagation();toggleSeparatedItem('${esc(it.separatedId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalTotal)}</td></tr>`).join('');return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div><span class="badge ${esc(b.separatedState)}">${stateLabel(b.separatedState)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Tổng số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
 function openPatient(id){state.selectedPatient=id;state.sequence=true;const p=state.batch.patients.find(x=>x.voucherId===id);state.currentIndex=Math.max(0,state.batch.patients.indexOf(p));$('patientSelect').value=id;renderDetail();gas('startPatient',{voucherId:id}).then(r=>{state.batch=r.batch;renderDetail()}).catch(e=>toast(e.message,'error'))}
 function openSeparated(){state.selectedPatient='__separated__';state.sequence=true;$('patientSelect').value='__separated__';renderDetail();gas('startSeparated',{batchId:state.batch.batchId}).then(r=>{state.batch=r.batch;renderDetail()}).catch(e=>toast(e.message,'error'))}
 async function changeDayCount(){const n=Number($('dayCountSelect').value);const ok=await confirmBox('Áp dụng số ngày chung',`Mọi bệnh nhân và mọi vị thuốc trong đợt sẽ cùng áp dụng ${n} ngày.\nSố lượng của tất cả vị thuốc sẽ được tính lại từ số lượng gốc.`,`Áp dụng ${n} ngày`);if(!ok){$('dayCountSelect').value=state.batch.dayCount;return}try{const r=await gas('setDayCount',{batchId:state.batch.batchId,dayCount:n});state.batch=r.batch;renderDetail();toast(`Đã áp dụng ${n} ngày cho toàn bộ đợt`,'success')}catch(e){$('dayCountSelect').value=state.batch.dayCount;toast(e.message,'error')}}
@@ -843,12 +874,12 @@ renderPatientCard=function(p,interactive){
   const rows=active.length?active.map((it,i)=>`<tr data-dy-kind="patient" data-dy-id="${esc(it.itemId)}" class="item-row ${it.dispensed?'done':''}" ${interactive&&p.state!=='DONE'&&p.state!=='AUTO_DONE'&&!p._finishPending?`onclick="togglePatientItem('${esc(it.itemId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} ${p._finishPending?'disabled':''} onclick="event.stopPropagation();togglePatientItem('${esc(it.itemId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalQty)}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">Toàn bộ vị thuốc đã chuyển sang phiếu tách riêng.</td></tr>`;
   const stateText=p._finishPending?'Đang chốt nền':stateLabel(p.state);
   const badgeClass=p._finishPending?'finish-pending-badge':esc(p.state);
-  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span>${p.room?`<span><b>Phòng:</b> ${esc(p.room)}</span>`:''}${p.bed?`<span><b>Giường:</b> ${esc(p.bed)}</span>`:''}</div></div><span class="badge ${badgeClass}">${stateText}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span>${p.room?`<span><b>Phòng:</b> ${esc(p.room)}</span>`:''}${p.bed?`<span><b>Giường:</b> ${esc(p.bed)}</span>`:''}</div></div><span class="badge ${badgeClass}">${stateText}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`
 };
 renderSeparatedCard=function(interactive){
   const b=state.batch,pending=dyHasFinishJob('separated',b.batchId);
   const rows=b.separatedItems.map((it,i)=>`<tr data-dy-kind="separated" data-dy-id="${esc(it.separatedId)}" class="item-row ${it.dispensed?'done':''}" ${interactive&&b.separatedState!=='DONE'&&!pending?`onclick="toggleSeparatedItem('${esc(it.separatedId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} ${pending?'disabled':''} onclick="event.stopPropagation();toggleSeparatedItem('${esc(it.separatedId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalTotal)}</td></tr>`).join('');
-  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div><span class="badge ${pending?'finish-pending-badge':esc(b.separatedState)}">${pending?'Đang chốt nền':stateLabel(b.separatedState)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Tổng số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div><span class="badge ${pending?'finish-pending-badge':esc(b.separatedState)}">${pending?'Đang chốt nền':stateLabel(b.separatedState)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Tổng số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`
 };
 
 function dyFindLocalItem(kind,id){
