@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y</title>
+  <title>Phát thuốc Đông Y V1.3</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root{--green:#2e7d32;--green2:#1b5e20;--mint:#e8f5e9;--cream:#fffdf5;--gold:#c69214;--red:#c62828;--pink:#ad3150;--ink:#263238;--muted:#66766d;--line:#dce7df;--blue:#1565c0;--shadow:0 8px 24px rgba(31,55,40,.12)}
-    *{box-sizing:border-box}body{margin:0;font-family:Arial,"Helvetica Neue",sans-serif;background:#f2f7f3;color:var(--ink);font-size:16px}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}
+    /* V1.3: đồng bộ font với phần mềm phát thuốc chính */
+    *{font-family:'Segoe UI',Roboto,Arial,sans-serif!important;box-sizing:border-box}
+    html,body{font-family:'Segoe UI',Roboto,Arial,sans-serif!important;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    body{margin:0;background:#f2f7f3;color:var(--ink);font-size:16px}
+    button,input,select,textarea,option,table,th,td,label{font-family:'Segoe UI',Roboto,Arial,sans-serif!important}
+    button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}
     .topbar{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
     .topbar-row{max-width:1200px;margin:auto;display:flex;align-items:center;gap:10px}.brand{font-size:20px;font-weight:900;flex:1}.subtitle{font-size:12px;opacity:.9}.user-pill{font-weight:800;font-size:13px;background:rgba(255,255,255,.16);padding:7px 10px;border-radius:999px}.nav{max-width:1200px;margin:8px auto 0;display:flex;gap:7px;flex-wrap:wrap}.nav button{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;padding:8px 12px;border-radius:999px;font-weight:800}.nav button.active{background:#fff;color:var(--green2)}
     .page{max-width:1200px;margin:16px auto;padding:0 12px 60px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}.panel h2,.panel h3{margin-top:0}.grid{display:grid;gap:12px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.space{justify-content:space-between}.grow{flex:1}.right{margin-left:auto}.muted{color:var(--muted)}.small{font-size:13px}.danger-text{color:var(--red);font-weight:800}.success-text{color:var(--green);font-weight:800}
@@ -117,6 +122,7 @@
 
 <script>
 'use strict';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_3';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const state={token:localStorage.getItem('DY_TOKEN')||'',user:null,settings:null,batches:[],batch:null,selectedPatient:'__all__',sequence:false,currentIndex:0,users:[],parsedImport:null};
@@ -140,7 +146,7 @@ function startDyBridge(){
   if(frame&&frame.src!==DY_GAS_WEB_APP_URL)frame.src=DY_GAS_WEB_APP_URL;
 }
 
-function waitForDyBridge(timeoutMs=20000){
+function waitForDyBridge(timeoutMs=30000){
   if(dyBridgeReady&&dyBridgeWindow)return Promise.resolve();
   startDyBridge();
   return new Promise((resolve,reject)=>{
@@ -149,7 +155,7 @@ function waitForDyBridge(timeoutMs=20000){
       if(dyBridgeReady&&dyBridgeWindow){clearInterval(timer);resolve();return}
       if(Date.now()-started>timeoutMs){
         clearInterval(timer);
-        reject(new Error('Không kết nối được Apps Script. Hãy kiểm tra URL /exec, quyền triển khai và file Bridge.html.'))
+        reject(new Error('Không nhận được tín hiệu Bridge V1.2. Hãy mở trực tiếp URL /exec: nếu không thấy “API Bridge Đông Y V1.2 đang hoạt động”, hãy kiểm tra deployment và file Bridge.html.'))
       }
     },100)
   })
