@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.3</title>
+  <title>Phát thuốc Đông Y V1.4</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -12,27 +12,61 @@
     /* V1.3: đồng bộ font với phần mềm phát thuốc chính */
     *{font-family:'Segoe UI',Roboto,Arial,sans-serif!important;box-sizing:border-box}
     html,body{font-family:'Segoe UI',Roboto,Arial,sans-serif!important;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-    body{margin:0;background:#f2f7f3;color:var(--ink);font-size:16px}
+    body{margin:0;background:#f2f7f3;color:var(--ink);font-size:18px;line-height:1.5}
     button,input,select,textarea,option,table,th,td,label{font-family:'Segoe UI',Roboto,Arial,sans-serif!important}
     button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}
     .topbar{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
     .topbar-row{max-width:1200px;margin:auto;display:flex;align-items:center;gap:10px}.brand{font-size:20px;font-weight:900;flex:1}.subtitle{font-size:12px;opacity:.9}.user-pill{font-weight:800;font-size:13px;background:rgba(255,255,255,.16);padding:7px 10px;border-radius:999px}.nav{max-width:1200px;margin:8px auto 0;display:flex;gap:7px;flex-wrap:wrap}.nav button{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;padding:8px 12px;border-radius:999px;font-weight:800}.nav button.active{background:#fff;color:var(--green2)}
-    .page{max-width:1200px;margin:16px auto;padding:0 12px 60px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}.panel h2,.panel h3{margin-top:0}.grid{display:grid;gap:12px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.space{justify-content:space-between}.grow{flex:1}.right{margin-left:auto}.muted{color:var(--muted)}.small{font-size:13px}.danger-text{color:var(--red);font-weight:800}.success-text{color:var(--green);font-weight:800}
-    label{font-weight:800;font-size:14px}input,select{width:100%;padding:11px 12px;border:1px solid #bfcfc4;border-radius:10px;background:#fff;color:var(--ink);min-height:44px}input:focus,select:focus{outline:3px solid rgba(46,125,50,.14);border-color:var(--green)}
-    .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:900;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn-green{background:var(--green);color:#fff}.btn-blue{background:var(--blue);color:#fff}.btn-red{background:var(--red);color:#fff}.btn-pink{background:var(--pink);color:#fff}.btn-gold{background:var(--gold);color:#fff}.btn-light{background:#edf4ef;color:#284c34;border:1px solid #bfd1c3}.btn-outline{background:#fff;color:var(--green2);border:1px solid #77a681}.btn-sm{min-height:34px;padding:7px 10px;font-size:14px}
-    .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(150deg,#e8f5e9,#fff8e1)}.login-card{width:min(440px,100%);background:#fff;padding:24px;border-radius:20px;box-shadow:0 20px 55px rgba(33,73,43,.2);border:1px solid #d4e7d7}.login-logo{font-size:52px;text-align:center}.login-title{text-align:center;color:var(--green2);font-size:25px;font-weight:900;margin:4px 0}.login-card .field{margin:12px 0}.login-card .btn{width:100%}
+    .page{max-width:1200px;margin:16px auto;padding:0 12px 60px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}.panel h2,.panel h3{margin-top:0}.grid{display:grid;gap:12px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.space{justify-content:space-between}.grow{flex:1}.right{margin-left:auto}.muted{color:var(--muted)}.small{font-size:14px}.danger-text{color:var(--red);font-weight:800}.success-text{color:var(--green);font-weight:800}
+    label{font-weight:800;font-size:16px}input,select{width:100%;padding:12px;border:1px solid #bfcfc4;border-radius:10px;background:#fff;color:var(--ink);min-height:46px;font-size:16px}input:focus,select:focus{outline:3px solid rgba(46,125,50,.14);border-color:var(--green)}
+    .btn{border:0;border-radius:10px;padding:11px 15px;font-weight:900;font-size:16px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn-green{background:var(--green);color:#fff}.btn-blue{background:var(--blue);color:#fff}.btn-red{background:var(--red);color:#fff}.btn-pink{background:var(--pink);color:#fff}.btn-gold{background:var(--gold);color:#fff}.btn-light{background:#edf4ef;color:#284c34;border:1px solid #bfd1c3}.btn-outline{background:#fff;color:var(--green2);border:1px solid #77a681}.btn-sm{min-height:38px;padding:8px 11px;font-size:15px}
+    .login-wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(150deg,#e8f5e9,#fff8e1);overflow:auto}.login-card{width:min(440px,100%);margin:auto;background:#fff;padding:24px;border-radius:20px;box-shadow:0 20px 55px rgba(33,73,43,.2);border:1px solid #d4e7d7}.login-logo{font-size:52px;text-align:center}.login-title{text-align:center;color:var(--green2);font-size:25px;font-weight:900;margin:4px 0}.login-card .field{margin:12px 0}.login-card .btn{width:100%}
     .batch-list{display:grid;gap:12px}.batch-card{background:#fff;border:1px solid var(--line);border-left:7px solid #9e9e9e;border-radius:14px;padding:14px;box-shadow:0 3px 12px rgba(24,45,30,.08)}.batch-card.WAITING{border-left-color:#f9a825}.batch-card.PROGRESS{border-left-color:#1976d2}.batch-card.DONE{border-left-color:#2e7d32}.batch-title{font-size:20px;font-weight:900;color:var(--green2)}.badge{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:900}.badge.WAITING{background:#fff3cd;color:#7a5600}.badge.PROGRESS{background:#e3f2fd;color:#0d47a1}.badge.DONE,.badge.AUTO_DONE{background:#e8f5e9;color:#1b5e20}.badge.NONE{background:#eceff1;color:#455a64}
     .progress{height:12px;background:#e5ece7;border-radius:999px;overflow:hidden}.progress>span{display:block;height:100%;background:linear-gradient(90deg,#43a047,#8bc34a)}
     .detail-head{position:sticky;top:105px;z-index:20;background:#f2f7f3;padding:6px 0}.detail-toolbar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 4px 14px rgba(30,60,38,.1)}.day-select{width:auto;min-width:120px;background:#fff8e1;border-color:#e0b84c;font-weight:900;color:#6b4e00}.patient-select{min-width:260px;flex:1}.patient-search{min-width:210px;flex:1}
     .patient-card{background:#fff;border:1px solid #d6e4da;border-radius:15px;margin:12px 0;overflow:hidden;box-shadow:0 4px 14px rgba(28,54,34,.08)}.patient-card-head{padding:13px 14px;background:linear-gradient(90deg,#eef8ef,#fff);border-bottom:1px solid #dce7df}.patient-name{font-size:20px;font-weight:900;color:#1b5e20}.patient-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:5px;font-size:14px}.patient-body{padding:0 12px 12px}
-    table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1px solid #e3ece5;text-align:left}th{background:#f6faf7;color:#35533e;font-size:13px;position:sticky;top:0}.qty{text-align:right;font-weight:900;font-size:17px}.unit{text-align:center}.stt{text-align:center;width:52px}.item-row{cursor:pointer;transition:.12s}.item-row:hover{background:#f5fbf6}.item-row.done{background:#e8f5e9;color:#365a3e}.item-row.separated{background:#f4f4f4;color:#777;text-decoration:line-through}.check{width:24px;height:24px;accent-color:var(--green)}
+    table{width:100%;border-collapse:collapse;font-size:18px}th,td{padding:10px 8px;border-bottom:1px solid #e3ece5;text-align:left}th{background:#f6faf7;color:#35533e;font-size:16px;position:sticky;top:0}.qty{text-align:right;font-weight:900;font-size:17px}.unit{text-align:center}.stt{text-align:center;width:52px}.item-row{cursor:pointer;transition:.12s}.item-row:hover{background:#f5fbf6}.item-row.done{background:#e8f5e9;color:#365a3e}.item-row.separated{background:#f4f4f4;color:#777;text-decoration:line-through}.check{width:24px;height:24px;accent-color:var(--green)}
     .sequence-nav{position:sticky;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid #ccdace;padding:9px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 16px rgba(32,58,39,.12)}
     .counter{font-size:18px;font-weight:900;color:var(--green2)}.all-cards .patient-card{break-inside:avoid}.empty{padding:24px;text-align:center;color:var(--muted);font-weight:800}
     .modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(15,29,19,.58);display:grid;place-items:center;padding:14px}.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 22px 70px rgba(0,0,0,.3);padding:18px}.modal h2{margin-top:0;color:var(--green2)}.herb-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.herb-option{display:flex;align-items:center;gap:9px;border:1px solid #d7e5da;border-radius:10px;padding:10px;background:#f9fcf9}.herb-option input{width:21px;min-height:21px}.herb-option span{font-weight:800}
+    .loading-overlay{position:fixed;inset:0;z-index:5000;background:rgba(238,247,240,.86);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(2px)}
+    .loading-box{min-width:220px;max-width:90vw;background:#fff;border:1px solid #b8d5bf;border-radius:16px;padding:18px 22px;box-shadow:0 18px 55px rgba(26,69,38,.22);display:flex;align-items:center;gap:14px;color:var(--green2);font-size:17px;font-weight:900;text-align:left}
+    .loading-spinner{width:34px;height:34px;flex:0 0 34px;border:4px solid #d8eadc;border-top-color:var(--green);border-radius:50%;animation:dySpin .8s linear infinite}
+    @keyframes dySpin{to{transform:rotate(360deg)}}
     .toast{position:fixed;right:14px;bottom:14px;z-index:200;background:#263238;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);max-width:360px;font-weight:800}.toast.error{background:#b71c1c}.toast.success{background:#1b5e20}
     .preview-table-wrap{max-height:380px;overflow:auto;border:1px solid #dce7df;border-radius:10px}.account-card{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px;border:1px solid #dbe7de;border-radius:10px;margin:7px 0}.audit{font-size:13px;max-height:500px;overflow:auto}.audit-row{padding:8px;border-bottom:1px solid #e4ece6}
-    @media(max-width:760px){body{font-size:15px}.topbar-row{align-items:flex-start}.brand{font-size:18px}.user-pill{display:none}.page{padding:0 8px 80px}.panel{padding:12px;border-radius:13px}.grid-2,.grid-3{grid-template-columns:1fr}.detail-head{top:99px}.detail-toolbar{padding:8px}.patient-select,.patient-search{min-width:100%;width:100%}.patient-name{font-size:18px}.patient-meta{gap:7px}.patient-body{padding:0 5px 10px}th,td{padding:9px 5px}.herb-grid{grid-template-columns:1fr}.nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.nav button{white-space:nowrap}.batch-title{font-size:18px}.sequence-nav{justify-content:flex-end}.sequence-nav .btn{flex:0 0 auto}.hide-mobile{display:none!important}}
-  </style>
+    @media(max-width:760px){body{font-size:16px;line-height:1.45}.login-wrap{min-height:100vh;min-height:100dvh;padding:14px;align-items:center;justify-content:center}.login-card{width:min(430px,calc(100vw - 28px));margin:auto;padding:20px}.login-title{font-size:23px}.topbar-row{align-items:flex-start}.brand{font-size:19px}.user-pill{display:none}.page{padding:0 8px 80px}.panel{padding:12px;border-radius:13px}.grid-2,.grid-3{grid-template-columns:1fr}.detail-head{top:99px}.detail-toolbar{padding:8px}.patient-select,.patient-search{min-width:100%;width:100%}.patient-name{font-size:19px}.patient-meta{gap:7px}.patient-body{padding:0 5px 10px}table{font-size:16px}th{font-size:15px}th,td{padding:9px 5px}.herb-grid{grid-template-columns:1fr}.nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.nav button{white-space:nowrap;font-size:15px}.batch-title{font-size:19px}.sequence-nav{justify-content:flex-end}.sequence-nav .btn{flex:0 0 auto}.hide-mobile{display:none!important}.loading-box{min-width:0;width:min(330px,92vw);font-size:16px}}
+  
+    /* V1.5: lưu theo block và chốt nền */
+    .item-save-indicator{position:fixed;right:12px;top:12px;z-index:4600;background:#fff8e1;color:#6d4c00;border:1px solid #e6c65c;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:900;box-shadow:0 5px 18px rgba(90,66,0,.18)}
+    .item-save-indicator.error{background:#ffebee;color:#a1262f;border-color:#ef9a9a}
+    .background-finish-panel{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:4550;max-width:min(620px,94vw);background:#e8f5e9;color:#1b5e20;border:1px solid #93c99f;border-radius:14px;padding:10px 13px;font-size:14px;font-weight:900;box-shadow:0 8px 28px rgba(24,80,38,.2)}
+    .background-finish-panel.error{background:#fff3e0;color:#8a3d00;border-color:#ffb66d;cursor:pointer}
+    .history-day-title{margin:18px 0 8px;color:var(--green2);font-size:18px;font-weight:900}
+    .history-card{background:#fff;border:1px solid var(--line);border-left:6px solid var(--green);border-radius:13px;padding:12px;margin:8px 0;box-shadow:0 3px 12px rgba(24,45,30,.07)}
+    .history-card.AUTO_DONE{border-left-color:#78909c}.history-card.SEPARATED{border-left-color:#d99b00}
+    .history-name{font-size:18px;font-weight:900;color:var(--green2)}
+    .finish-pending-badge{background:#fff3cd;color:#795600}
+    body.dispensing-focus .topbar{display:none!important}
+    body.dispensing-focus #page-detail{padding-top:4px!important}
+    body.dispensing-focus .detail-head{top:0!important;padding-top:0}
+    body.dispensing-focus .detail-config-row,
+    body.dispensing-focus .patient-picker-row,
+    body.dispensing-focus #exitBatchSequenceButton{display:none!important}
+    body.dispensing-focus .detail-toolbar{padding:7px 9px;border-radius:10px}
+    body.dispensing-focus #detailMeta{display:none}
+    body.dispensing-focus .patient-card{margin-top:7px}
+    body.dispensing-focus .patient-body{padding-left:5px;padding-right:5px}
+    body.dispensing-focus #detailContent{padding-bottom:78px}
+    @media(max-width:760px){
+      .item-save-indicator{top:7px;right:7px;font-size:13px;padding:7px 10px}
+      .background-finish-panel{bottom:7px;font-size:13px}
+      body.dispensing-focus .page{padding-left:3px;padding-right:3px}
+      body.dispensing-focus .patient-card-head{padding:9px 8px}
+      body.dispensing-focus .patient-name{font-size:20px}
+      body.dispensing-focus th,body.dispensing-focus td{padding:10px 4px}
+    }
+</style>
 </head>
 <body>
 <div id="loginView" class="login-wrap">
@@ -49,12 +83,12 @@
 
 <div id="appView" class="hidden">
   <header class="topbar">
-    <div class="topbar-row"><div class="brand">🌿 PHÁT THUỐC ĐÔNG Y<div class="subtitle" id="headerSubtitle">Kho Đông Y · Khoa Y học dân tộc</div></div><div id="userPill" class="user-pill"></div><button class="btn btn-light btn-sm" onclick="logout()">Thoát TK</button></div>
+    <div class="topbar-row"><div class="brand">🌿 PHÁT THUỐC ĐÔNG Y<div class="subtitle" id="headerSubtitle">Kho Đông Y · Khoa Y học dân tộc</div></div><div id="userPill" class="user-pill"></div><button class="btn btn-light btn-sm" onclick="logout()">Đăng xuất</button></div>
     <nav class="nav" id="mainNav">
       <button data-page="batches" class="active" onclick="showPage('batches')">Danh sách phiếu</button>
-      <button data-page="import" class="admin-only" onclick="showPage('import')">Nạp Excel</button>
+      <button data-page="import" class="admin-only" onclick="showPage('import')">Nạp phiếu</button>
       <button data-page="users" class="admin-only" onclick="showPage('users')">Tài khoản</button>
-      <button data-page="audit" class="admin-only" onclick="showPage('audit')">Nhật ký</button>
+      <button data-page="history" onclick="showPage('history')">Lịch sử</button>
       <button data-page="password" onclick="showPage('password')">Đổi mật khẩu</button>
     </nav>
   </header>
@@ -69,14 +103,14 @@
       <div class="detail-head">
         <div class="detail-toolbar">
           <div class="row space"><div><div id="detailTitle" class="batch-title"></div><div id="detailMeta" class="muted small"></div></div><span id="detailState" class="badge"></span></div>
-          <div class="row" style="margin-top:9px">
+          <div class="row detail-config-row" style="margin-top:9px">
             <label>Số ngày chung:</label>
             <select id="dayCountSelect" class="day-select" onchange="changeDayCount()"></select>
             <button id="herbButton" class="btn btn-gold" onclick="openHerbModal()">🌿 Vị thuốc</button>
             <button id="startButton" class="btn btn-green" onclick="startSequential()">▶ Bắt đầu phát</button>
-            <button class="btn btn-outline right" onclick="requestExitBatch()">↩ Thoát phiếu</button>
+            <button id="exitBatchTopButton" class="btn btn-outline right" onclick="requestExitBatch()">↩ Thoát phiếu</button>
           </div>
-          <div class="row" style="margin-top:9px">
+          <div class="row patient-picker-row" style="margin-top:9px">
             <input id="patientSearch" class="patient-search" placeholder="Tìm tên hoặc mã bệnh nhân..." oninput="filterPatientOptions()">
             <select id="patientSelect" class="patient-select" onchange="changePatientSelection()"></select>
           </div>
@@ -88,27 +122,37 @@
         <button class="btn btn-light" onclick="previousPatient()">← Trước</button>
         <button class="btn btn-blue" onclick="nextPatient()">Tiếp →</button>
         <button id="finishCurrentButton" class="btn btn-green" onclick="finishCurrentVoucher()">✓ Chốt phiếu</button>
-        <button class="btn btn-red" onclick="requestExitBatch()">Lưu và thoát</button>
+        <button id="exitBatchSequenceButton" class="btn btn-red" onclick="requestExitBatch()">Lưu và thoát</button>
       </div>
     </section>
 
     <section id="page-import" class="page hidden admin-only">
-      <div class="panel"><h2>Nạp file Excel tổng hợp y lệnh</h2><p class="muted">Phần mềm tự tìm dòng tiêu đề có “Mã BN”, “Họ & tên”, “Năm sinh”; các cột sau là vị thuốc.</p>
-        <div class="grid grid-2"><div><label>File Excel</label><input id="excelFile" type="file" accept=".xlsx,.xls" onchange="parseExcelFile()"></div><div><label>Tên đợt phát</label><input id="importTitle" value="Tổng hợp y lệnh Đông Y"></div></div>
+      <div class="panel"><h2>Nạp phiếu Đông Y</h2><p class="muted">Chọn file Excel tổng hợp y lệnh. Phần mềm tự tìm dòng tiêu đề có “Mã BN”, “Họ & tên”, “Năm sinh”; các cột sau là vị thuốc.</p>
+        <div class="grid grid-2"><div><label>File phiếu Excel</label><input id="excelFile" type="file" accept=".xlsx,.xls" onchange="parseExcelFile()"></div><div><label>Tên đợt phát</label><input id="importTitle" value="" oninput="markImportTitleEdited()" placeholder="Đang tạo tên phiếu tự động..."></div></div>
         <div id="importPreview" style="margin-top:14px"></div>
       </div>
     </section>
 
     <section id="page-users" class="page hidden admin-only">
-      <div class="panel"><h2>Quản lý tài khoản</h2><div class="grid grid-3"><div><label>Tài khoản</label><input id="userUsername" placeholder="vi dụ: nguyenvana"></div><div><label>Họ tên</label><input id="userDisplayName"></div><div><label>Vai trò</label><select id="userRole"><option value="phat">Người phát</option><option value="admin">Admin</option></select></div></div><div class="row" style="margin-top:10px"><div class="grow"><label>Mật khẩu mới</label><input id="userPassword" type="password" placeholder="Ít nhất 8 ký tự; để trống nếu không đổi"></div><button class="btn btn-green" onclick="saveUser()">Lưu tài khoản</button></div></div>
+      <div class="panel"><h2>Quản lý tài khoản</h2><div class="grid grid-3"><div><label>Tài khoản</label><input id="userUsername" placeholder="vi dụ: nguyenvana"></div><div><label>Họ tên</label><input id="userDisplayName"></div><div><label>Vai trò</label><select id="userRole"><option value="phat">Người phát</option><option value="admin">Admin</option></select></div></div><div class="row" style="margin-top:10px"><div class="grow"><label>Mật khẩu mới</label><input id="userPassword" type="password" placeholder="Không giới hạn độ dài; để trống nếu không đổi"></div><button class="btn btn-green" onclick="saveUser()">Lưu tài khoản</button></div></div>
       <div class="panel"><input id="userSearch" placeholder="Tìm tài khoản hoặc họ tên..." oninput="renderUsers()"><div id="userList"></div></div>
     </section>
 
-    <section id="page-audit" class="page hidden admin-only"><div class="panel"><div class="row space"><h2>Nhật ký thao tác</h2><button class="btn btn-green" onclick="loadAudit()">Làm mới</button></div><div id="auditList" class="audit"></div></div></section>
+    <section id="page-history" class="page hidden">
+      <div class="panel">
+        <div class="row space"><div><h2 style="margin:0">Lịch sử phiếu đã phát</h2><div id="historySubtitle" class="muted small">10 ngày gần nhất</div></div><button class="btn btn-green" onclick="loadHistory()">🔄 Làm mới</button></div>
+        <input id="historySearch" placeholder="Tìm tên hoặc mã bệnh nhân..." oninput="renderHistory()" style="margin-top:12px">
+      </div>
+      <div id="historyList"></div>
+    </section>
 
     <section id="page-password" class="page hidden"><div class="panel" style="max-width:560px;margin:auto"><h2>Đổi mật khẩu</h2><label>Mật khẩu hiện tại</label><input id="oldPassword" type="password"><br><br><label>Mật khẩu mới</label><input id="newPassword" type="password"><br><br><label>Nhập lại mật khẩu mới</label><input id="confirmPassword" type="password"><br><br><button class="btn btn-green" onclick="changePassword()">Đổi mật khẩu</button></div></section>
   </main>
 </div>
+
+<div id="itemSaveIndicator" class="item-save-indicator hidden" aria-live="polite"></div>
+<div id="backgroundFinishPanel" class="background-finish-panel hidden" aria-live="polite"></div>
+<div id="loadingOverlay" class="loading-overlay hidden" role="status" aria-live="assertive" aria-busy="true"><div class="loading-box"><div class="loading-spinner"></div><div id="loadingText">Đang xử lý...</div></div></div>
 
 <div id="modalHost"></div><div id="toast" class="toast hidden"></div>
 
@@ -122,10 +166,10 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_3';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_5';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
-const state={token:localStorage.getItem('DY_TOKEN')||'',user:null,settings:null,batches:[],batch:null,selectedPatient:'__all__',sequence:false,currentIndex:0,users:[],parsedImport:null};
+const state={token:localStorage.getItem('DY_TOKEN')||'',user:null,settings:null,batches:[],batch:null,selectedPatient:'__all__',sequence:false,currentIndex:0,users:[],parsedImport:null,importTitleAuto:true,importDefaultTitle:''};
 const $=id=>document.getElementById(id);
 let dyBridgeReady=false;
 let dyBridgeWindow=null;
@@ -155,7 +199,7 @@ function waitForDyBridge(timeoutMs=30000){
       if(dyBridgeReady&&dyBridgeWindow){clearInterval(timer);resolve();return}
       if(Date.now()-started>timeoutMs){
         clearInterval(timer);
-        reject(new Error('Không nhận được tín hiệu Bridge V1.2. Hãy mở trực tiếp URL /exec: nếu không thấy “API Bridge Đông Y V1.2 đang hoạt động”, hãy kiểm tra deployment và file Bridge.html.'))
+        reject(new Error('Không nhận được tín hiệu Bridge V1.5. Hãy mở trực tiếp URL /exec: nếu không thấy “API Bridge Đông Y V1.5 đang hoạt động”, hãy kiểm tra deployment và file Bridge.html.'))
       }
     },100)
   })
@@ -189,22 +233,61 @@ window.addEventListener('message',event=>{
   pending.resolve(data)
 });
 
+const DY_LOADING_MESSAGES={
+  login:'Đang đăng nhập...',bootstrap:'Đang tải dữ liệu...',logout:'Đang đăng xuất...',
+  listBatches:'Đang tải danh sách phiếu...',getBatch:'Đang mở phiếu...',
+  getImportDefaults:'Đang chuẩn bị tên phiếu...',importBatch:'Đang nạp phiếu...',
+  setDayCount:'Đang cập nhật số ngày...',saveSeparatedHerbs:'Đang tạo phiếu vị thuốc...',
+  startPatient:'Đang mở phiếu bệnh nhân...',startSeparated:'Đang mở phiếu vị thuốc...',
+  togglePatientItem:'Đang lưu vị thuốc...',toggleSeparatedItem:'Đang lưu vị thuốc...',saveItemActionsBatch:'Đang lưu vị thuốc...',
+  finishPatient:'Đang chốt phiếu bệnh nhân...',finishSeparated:'Đang chốt phiếu vị thuốc...',
+  finishBatch:'Đang hoàn thành đợt phát...',exitBatch:'Đang lưu tiến độ...',
+  resetBatch:'Đang đặt lại đợt phát...',deleteBatch:'Đang xóa phiếu...',
+  listUsers:'Đang tải tài khoản...',saveUser:'Đang lưu tài khoản...',toggleUser:'Đang cập nhật tài khoản...',
+  listAudit:'Đang tải nhật ký...',listHistory:'Đang tải lịch sử phiếu...',changePassword:'Đang đổi mật khẩu...'
+};
+let dyLoadingCounter=0;
+const dyLoadingEntries=new Map();
+function showLoading(message='Đang xử lý...'){
+  const token='DY_LOADING_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+  dyLoadingCounter++;
+  dyLoadingEntries.set(token,message);
+  const overlay=$('loadingOverlay');
+  const text=$('loadingText');
+  if(text)text.textContent=message;
+  if(overlay)overlay.classList.remove('hidden');
+  return token;
+}
+function hideLoading(token){
+  if(token&&dyLoadingEntries.has(token)){dyLoadingEntries.delete(token);dyLoadingCounter=Math.max(0,dyLoadingCounter-1)}
+  const overlay=$('loadingOverlay');
+  const text=$('loadingText');
+  if(dyLoadingCounter<=0||dyLoadingEntries.size===0){dyLoadingCounter=0;if(overlay)overlay.classList.add('hidden');return}
+  const messages=[...dyLoadingEntries.values()];
+  if(text)text.textContent=messages[messages.length-1]||'Đang xử lý...';
+}
+
 async function gas(action,payload={}){
-  if(!DY_GAS_WEB_APP_URL||DY_GAS_WEB_APP_URL.includes('PASTE_YOUR_')){
-    throw new Error('Chưa cấu hình URL Apps Script trong DY_GAS_WEB_APP_URL.');
+  const loadingToken=showLoading(DY_LOADING_MESSAGES[action]||'Đang xử lý...');
+  try{
+    if(!DY_GAS_WEB_APP_URL||DY_GAS_WEB_APP_URL.includes('PASTE_YOUR_')){
+      throw new Error('Chưa cấu hình URL Apps Script trong DY_GAS_WEB_APP_URL.');
+    }
+    await waitForDyBridge();
+    const id='DY_REQ_'+Date.now()+'_'+(++dyRequestCounter);
+    return await new Promise((resolve,reject)=>{
+      const timeout=setTimeout(()=>{
+        dyPendingRequests.delete(id);
+        reject(new Error('Yêu cầu máy chủ quá thời gian chờ.'))
+      },30000);
+      dyPendingRequests.set(id,{resolve,reject,timeout});
+      dyBridgeWindow.postMessage({
+        type:'DY_GAS_REQUEST',id,action,payload,token:state.token
+      },dyBridgeOrigin)
+    })
+  }finally{
+    hideLoading(loadingToken)
   }
-  await waitForDyBridge();
-  const id='DY_REQ_'+Date.now()+'_'+(++dyRequestCounter);
-  return new Promise((resolve,reject)=>{
-    const timeout=setTimeout(()=>{
-      dyPendingRequests.delete(id);
-      reject(new Error('Yêu cầu máy chủ quá thời gian chờ.'))
-    },30000);
-    dyPendingRequests.set(id,{resolve,reject,timeout});
-    dyBridgeWindow.postMessage({
-      type:'DY_GAS_REQUEST',id,action,payload,token:state.token
-    },dyBridgeOrigin)
-  })
 }
 function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function norm(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().trim()}
@@ -218,9 +301,25 @@ async function login(){try{$('loginError').textContent='';const res=await gas('l
 async function bootstrap(){try{const res=await gas('bootstrap');state.user=res.user;state.settings=res.settings;state.batches=res.batches||[];state.users=res.users||[];$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('userPill').textContent=`${state.user.displayName} · ${state.user.role==='admin'?'Admin':'Người phát'}`;$('headerSubtitle').textContent=`${state.settings.warehouseName} · ${state.settings.departmentName}`;document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',state.user.role!=='admin'));renderBatches();renderUsers();showPage('batches')}catch(e){forceLogout();$('loginError').textContent=e.message}}
 function forceLogout(){state.token='';localStorage.removeItem('DY_TOKEN');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden')}
 async function logout(){try{await gas('logout')}catch(e){}forceLogout()}
-function showPage(name){document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));const page=$('page-'+name);if(page)page.classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(name==='audit')loadAudit();if(name==='users')renderUsers()}
-async function refreshBatches(){try{const r=await gas('listBatches');state.batches=r.batches||[];renderBatches();toast('Đã làm mới','success')}catch(e){toast(e.message,'error')}}
-function renderBatches(){const el=$('batchList');if(!state.batches.length){el.innerHTML='<div class="panel empty">Chưa có đợt phát. Admin vào “Nạp Excel” để tạo đợt đầu tiên.</div>';return}el.innerHTML=state.batches.map(b=>{const pct=b.totalPatients?Math.round(b.completedPatients*100/b.totalPatients):0;return `<div class="batch-card ${esc(b.state)}"><div class="row space"><div class="grow"><div class="batch-title">${esc(b.title)}</div><div class="muted">${fmtDate(b.dateFrom)}${b.dateTo&&b.dateTo!==b.dateFrom?' – '+fmtDate(b.dateTo):''}</div></div><span class="badge ${esc(b.state)}">${stateLabel(b.state)}</span></div><div class="row small" style="margin:10px 0"><b>Số ngày chung: ${b.dayCount}</b><span>·</span><span>${b.completedPatients}/${b.totalPatients} bệnh nhân</span>${b.separatedState!=='NONE'?`<span>· Phiếu tách: ${stateLabel(b.separatedState)}</span>`:''}</div><div class="progress"><span style="width:${pct}%"></span></div><div class="row" style="margin-top:11px"><button class="btn btn-green" onclick="openBatch('${esc(b.batchId)}')">Mở đợt phát</button>${state.user&&state.user.role==='admin'?`<button class="btn btn-light" onclick="resetBatch('${esc(b.batchId)}')">Đặt lại</button><button class="btn btn-red right" onclick="deleteBatch('${esc(b.batchId)}')">Xóa</button>`:''}</div></div>`}).join('')}
+function showPage(name){document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));const page=$('page-'+name);if(page)page.classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(name==='audit')loadAudit();if(name==='users')renderUsers();if(name==='import')prepareImportPage()}
+async function refreshBatches(silent=false){try{const r=await gas('listBatches');state.batches=r.batches||[];renderBatches();if(!silent)toast('Đã làm mới','success')}catch(e){toast(e.message,'error')}}
+async function prepareImportPage(force=false){
+  if(!state.user||state.user.role!=='admin')return;
+  const input=$('importTitle');
+  if(!input)return;
+  if(!force&&!state.importTitleAuto&&input.value.trim())return;
+  try{
+    const r=await gas('getImportDefaults');
+    state.importDefaultTitle=r.suggestedTitle||'';
+    state.importTitleAuto=true;
+    input.value=state.importDefaultTitle;
+  }catch(e){toast(e.message,'error')}
+}
+function markImportTitleEdited(){
+  const value=$('importTitle').value.trim();
+  state.importTitleAuto=value===''||value===state.importDefaultTitle;
+}
+function renderBatches(){const el=$('batchList');if(!state.batches.length){el.innerHTML='<div class="panel empty">Chưa có đợt phát. Admin vào “Nạp phiếu” để tạo đợt đầu tiên.</div>';return}el.innerHTML=state.batches.map(b=>{const pct=b.totalPatients?Math.round(b.completedPatients*100/b.totalPatients):0;return `<div class="batch-card ${esc(b.state)}"><div class="row space"><div class="grow"><div class="batch-title">${esc(b.title)}</div><div class="muted">${fmtDate(b.dateFrom)}${b.dateTo&&b.dateTo!==b.dateFrom?' – '+fmtDate(b.dateTo):''}</div></div><span class="badge ${esc(b.state)}">${stateLabel(b.state)}</span></div><div class="row small" style="margin:10px 0"><b>Số ngày chung: ${b.dayCount}</b><span>·</span><span>${b.completedPatients}/${b.totalPatients} bệnh nhân</span>${b.separatedState!=='NONE'?`<span>· Phiếu tách: ${stateLabel(b.separatedState)}</span>`:''}</div><div class="progress"><span style="width:${pct}%"></span></div><div class="row" style="margin-top:11px"><button class="btn btn-green" onclick="openBatch('${esc(b.batchId)}')">Mở đợt phát</button>${state.user&&state.user.role==='admin'?`<button class="btn btn-light" onclick="resetBatch('${esc(b.batchId)}')">Đặt lại</button><button class="btn btn-red right" onclick="deleteBatch('${esc(b.batchId)}')">Xóa</button>`:''}</div></div>`}).join('')}
 async function openBatch(id){try{const r=await gas('getBatch',{batchId:id});state.batch=r.batch;state.selectedPatient='__all__';state.sequence=false;state.currentIndex=0;showPage('detail');renderDetail()}catch(e){toast(e.message,'error')}}
 function renderDetail(){const b=state.batch;if(!b)return;$('detailTitle').textContent=b.title;$('detailMeta').textContent=`${fmtDate(b.dateFrom)}${b.dateTo&&b.dateTo!==b.dateFrom?' – '+fmtDate(b.dateTo):''} · ${b.totalPatients} bệnh nhân`;$('detailState').className='badge '+b.state;$('detailState').textContent=stateLabel(b.state);$('dayCountSelect').innerHTML=Array.from({length:10},(_,i)=>`<option value="${i+1}" ${b.dayCount===i+1?'selected':''}>${i+1} ngày</option>`).join('');const configurable=b.state==='WAITING'&&!hasAnyDispensed(b);$('dayCountSelect').disabled=!configurable;$('herbButton').disabled=!configurable;$('startButton').disabled=b.state==='DONE';const pct=b.totalPatients?Math.round(b.completedPatients*100/b.totalPatients):0;$('progressText').textContent=`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân`;$('progressBar').style.width=pct+'%';buildPatientOptions();renderDetailContent();$('sequenceNav').classList.toggle('hidden',!state.sequence);$('finishCurrentButton').textContent=state.selectedPatient==='__separated__'?'✓ Chốt phiếu vị thuốc':'✓ Chốt phiếu bệnh nhân'}
 function hasAnyDispensed(b){return b.patients.some(p=>p.items.some(i=>i.dispensed))||b.separatedItems.some(i=>i.dispensed)||b.patients.some(p=>p.state==='PROGRESS')||b.separatedState==='PROGRESS'}
@@ -248,16 +347,271 @@ async function requestExitBatch(){const b=state.batch;const remaining=b.patients
 async function reloadCurrentBatch(){if(!state.batch)return;try{const r=await gas('getBatch',{batchId:state.batch.batchId});state.batch=r.batch;renderDetail()}catch(e){toast(e.message,'error')}}
 async function resetBatch(id){const ok=await confirmBox('Đặt lại tiến độ','Toàn bộ dấu đã phát và trạng thái hoàn thành sẽ bị xóa. Số ngày chung và cấu hình vị thuốc tách riêng vẫn được giữ.','Đặt lại');if(!ok)return;try{const r=await gas('resetBatch',{batchId:id});state.batch=r.batch;await refreshBatches();toast('Đã đặt lại tiến độ','success')}catch(e){toast(e.message,'error')}}
 async function deleteBatch(id){const ok=await confirmBox('Xóa đợt phát','Tất cả bệnh nhân, vị thuốc và tiến độ của đợt sẽ bị xóa khỏi Google Sheet. Không thể hoàn tác.','Xóa vĩnh viễn');if(!ok)return;try{const r=await gas('deleteBatch',{batchId:id});state.batches=r.batches||[];renderBatches();toast('Đã xóa đợt phát','success')}catch(e){toast(e.message,'error')}}
-async function parseExcelFile(){const file=$('excelFile').files[0];if(!file)return;if(typeof XLSX==='undefined'){toast('Không tải được thư viện đọc Excel. Hãy kiểm tra Internet.','error');return}try{const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:false});const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});state.parsedImport=parseWorkbookRows(rows);renderImportPreview()}catch(e){state.parsedImport=null;$('importPreview').innerHTML=`<div class="danger-text">${esc(e.message)}</div>`}}
+async function parseExcelFile(){const file=$('excelFile').files[0];if(!file)return;if(typeof XLSX==='undefined'){toast('Không tải được thư viện đọc Excel. Hãy kiểm tra Internet.','error');return}const loadingToken=showLoading('Đang đọc và kiểm tra phiếu Excel...');try{const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:false});const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});state.parsedImport=parseWorkbookRows(rows);renderImportPreview()}catch(e){state.parsedImport=null;$('importPreview').innerHTML=`<div class="danger-text">${esc(e.message)}</div>`}finally{hideLoading(loadingToken)}}
 function parseWorkbookRows(rows){let headerRow=-1;for(let i=0;i<Math.min(rows.length,40);i++){const ns=rows[i].map(norm);if(ns.includes('ma bn')&&ns.some(x=>x.includes('ho & ten')||x==='ho ten')&&ns.includes('nam sinh')){headerRow=i;break}}if(headerRow<0)throw new Error('Không tìm thấy dòng tiêu đề có Mã BN, Họ & tên và Năm sinh.');const header=rows[headerRow].map(x=>String(x||'').trim());const find=(patterns)=>header.findIndex(h=>patterns.some(p=>norm(h).includes(p)));const iRoom=find(['phong']),iBed=find(['giuong']),iCode=find(['ma bn']),iName=find(['ho & ten','ho ten']),iGender=find(['gioi tinh']),iBirth=find(['nam sinh']);const herbStart=iBirth+1;if(iCode<0||iName<0||iBirth<0||herbStart>=header.length)throw new Error('Cấu trúc cột không hợp lệ.');const herbCols=[];for(let c=herbStart;c<header.length;c++){const name=String(header[c]||'').split('//')[0].trim();if(name)herbCols.push({col:c,name})}let dateFrom='',dateTo='';for(let i=0;i<headerRow;i++){const text=rows[i].join(' ');const m=text.match(/Từ ngày\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*đến ngày\s*(\d{1,2}\/\d{1,2}\/\d{4})/i);if(m){dateFrom=toIsoDate(m[1]);dateTo=toIsoDate(m[2]);break}}const patients=[];for(let r=headerRow+1;r<rows.length;r++){const row=rows[r];const code=String(row[iCode]||'').trim();const name=String(row[iName]||'').trim();if(!code||!name)continue;if(norm(name).includes('tong cong'))continue;const items=[];herbCols.forEach(h=>{const raw=String(row[h.col]||'').replace(/\s/g,'').replace(',','.');const qty=Number(raw);if(isFinite(qty)&&qty>0)items.push({herbName:h.name,quantity:qty})});if(!items.length)continue;patients.push({room:iRoom>=0?String(row[iRoom]||'').trim():'',bed:iBed>=0?String(row[iBed]||'').trim():'',patientCode:code,patientName:name,gender:iGender>=0?String(row[iGender]||'').trim():'',birthYear:Number(String(row[iBirth]||'').replace(/\D/g,''))||'',items})}if(!patients.length)throw new Error('Không tìm thấy bệnh nhân có vị thuốc.');return{dateFrom,dateTo,patients,herbCount:herbCols.length,headerRow:headerRow+1}}
 function toIsoDate(s){const m=String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:''}
-function renderImportPreview(){const p=state.parsedImport;if(!p)return;const sample=p.patients.slice(0,10);$('importPreview').innerHTML=`<div class="panel" style="box-shadow:none;background:#f8fcf9"><div class="row"><span class="badge DONE">${p.patients.length} bệnh nhân hợp lệ</span><span class="badge PROGRESS">${p.herbCount} cột vị thuốc</span><span class="badge WAITING">Dòng tiêu đề: ${p.headerRow}</span></div><div class="grid grid-2" style="margin-top:10px"><div><label>Từ ngày</label><input id="dateFrom" type="date" value="${esc(p.dateFrom)}"></div><div><label>Đến ngày</label><input id="dateTo" type="date" value="${esc(p.dateTo||p.dateFrom)}"></div></div><div class="preview-table-wrap" style="margin-top:12px"><table><thead><tr><th>Mã BN</th><th>Họ tên</th><th>Năm sinh</th><th>Số vị</th></tr></thead><tbody>${sample.map(x=>`<tr><td>${esc(x.patientCode)}</td><td>${esc(x.patientName)}</td><td>${esc(x.birthYear)}</td><td>${x.items.length}</td></tr>`).join('')}</tbody></table></div><div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn btn-green" onclick="importParsedBatch()">Nạp ${p.patients.length} bệnh nhân vào phần mềm</button></div></div>`}
-async function importParsedBatch(){if(!state.parsedImport)return;const dateFrom=$('dateFrom').value,dateTo=$('dateTo').value;if(!dateFrom||!dateTo){toast('Vui lòng chọn ngày của đợt phát','error');return}const ok=await confirmBox('Nạp đợt phát',`Tạo đợt mới gồm ${state.parsedImport.patients.length} bệnh nhân.\nSố ngày chung ban đầu là 1 và có thể đổi trước khi bắt đầu phát.`,'Nạp dữ liệu');if(!ok)return;try{const r=await gas('importBatch',{title:$('importTitle').value,dateFrom,dateTo,patients:state.parsedImport.patients});state.batch=r.batch;state.parsedImport=null;$('excelFile').value='';$('importPreview').innerHTML='';await refreshBatches();showPage('detail');state.selectedPatient='__all__';renderDetail();toast('Đã nạp dữ liệu Excel','success')}catch(e){toast(e.message,'error')}}
+function renderImportPreview(){const p=state.parsedImport;if(!p)return;const sample=p.patients.slice(0,10);$('importPreview').innerHTML=`<div class="panel" style="box-shadow:none;background:#f8fcf9"><div class="row"><span class="badge DONE">${p.patients.length} bệnh nhân hợp lệ</span><span class="badge PROGRESS">${p.herbCount} cột vị thuốc</span><span class="badge WAITING">Dòng tiêu đề: ${p.headerRow}</span></div><div class="grid grid-2" style="margin-top:10px"><div><label>Từ ngày</label><input id="dateFrom" type="date" value="${esc(p.dateFrom)}"></div><div><label>Đến ngày</label><input id="dateTo" type="date" value="${esc(p.dateTo||p.dateFrom)}"></div></div><div class="preview-table-wrap" style="margin-top:12px"><table><thead><tr><th>Mã BN</th><th>Họ tên</th><th>Năm sinh</th><th>Số vị</th></tr></thead><tbody>${sample.map(x=>`<tr><td>${esc(x.patientCode)}</td><td>${esc(x.patientName)}</td><td>${esc(x.birthYear)}</td><td>${x.items.length}</td></tr>`).join('')}</tbody></table></div><div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn btn-green" onclick="importParsedBatch()">Nạp phiếu (${p.patients.length} bệnh nhân)</button></div></div>`}
+async function importParsedBatch(){if(!state.parsedImport)return;const dateFrom=$('dateFrom').value,dateTo=$('dateTo').value;if(!dateFrom||!dateTo){toast('Vui lòng chọn ngày của đợt phát','error');return}const ok=await confirmBox('Nạp phiếu',`Tạo phiếu mới gồm ${state.parsedImport.patients.length} bệnh nhân.
+Số ngày chung ban đầu là 1 và có thể đổi trước khi bắt đầu phát.`,'Nạp phiếu');if(!ok)return;try{const r=await gas('importBatch',{title:$('importTitle').value,autoTitle:state.importTitleAuto,dateFrom,dateTo,patients:state.parsedImport.patients});state.batch=null;state.parsedImport=null;$('excelFile').value='';$('importPreview').innerHTML='';state.batches=r.batches||state.batches;renderBatches();state.importTitleAuto=true;state.importDefaultTitle='';$('importTitle').value='';showPage('batches');toast(`Đã nạp phiếu: ${r.title||'Phiếu Đông Y'}`,'success')}catch(e){toast(e.message,'error')}}
 function renderUsers(){if(!state.user||state.user.role!=='admin')return;const q=norm($('userSearch')?$('userSearch').value:'');const users=(state.users||[]).filter(u=>!q||norm(u.username+' '+u.displayName+' '+u.role).includes(q));$('userList').innerHTML=users.map(u=>`<div class="account-card"><div><b>${esc(u.displayName)}</b><div class="muted small">${esc(u.username)} · ${u.role==='admin'?'Admin':'Người phát'} · ${u.active?'Đang hoạt động':'Đã khóa'}</div></div><button class="btn ${u.active?'btn-red':'btn-green'} btn-sm" onclick="toggleUser('${esc(u.username)}',${!u.active})">${u.active?'Khóa':'Mở'}</button></div>`).join('')||'<div class="empty">Không có tài khoản phù hợp.</div>'}
 async function saveUser(){try{const r=await gas('saveUser',{username:$('userUsername').value,displayName:$('userDisplayName').value,role:$('userRole').value,password:$('userPassword').value});state.users=r.users||[];$('userPassword').value='';renderUsers();toast('Đã lưu tài khoản','success')}catch(e){toast(e.message,'error')}}
 async function toggleUser(username,active){try{const r=await gas('toggleUser',{username,active});state.users=r.users||[];renderUsers()}catch(e){toast(e.message,'error')}}
 async function loadAudit(){try{const r=await gas('listAudit',{limit:400});$('auditList').innerHTML=(r.audit||[]).map(a=>`<div class="audit-row"><b>${esc(a.username)}</b> · ${esc(a.action)}<div>${esc(a.detail)}</div><div class="muted">${fmtDateTime(a.timestamp)}</div></div>`).join('')||'<div class="empty">Chưa có nhật ký.</div>'}catch(e){toast(e.message,'error')}}
 async function changePassword(){const n=$('newPassword').value;if(n!==$('confirmPassword').value){toast('Mật khẩu nhập lại không khớp','error');return}try{await gas('changePassword',{oldPassword:$('oldPassword').value,newPassword:n});$('oldPassword').value='';$('newPassword').value='';$('confirmPassword').value='';toast('Đã đổi mật khẩu','success')}catch(e){toast(e.message,'error')}}
+
+/* ================= V1.5 BLOCK SAVE / BACKGROUND FINISH / HISTORY ================= */
+Object.assign(state,{
+  itemQueue:[],itemBatchRunning:false,itemBatchTimer:null,itemBatchRetryTimer:null,
+  finishQueue:[],finishRunning:false,finishRetryTimer:null,history:[],historyDays:10
+});
+
+function dyQueueKey(prefix){return prefix+'_'+(state.user&&state.user.username?state.user.username:'anonymous')}
+function dyLoadJson(key,fallback){try{const x=JSON.parse(localStorage.getItem(key)||'null');return x===null?fallback:x}catch(e){return fallback}}
+function dySaveJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(e){}}
+function dyActionKey(a){return a.kind+':'+a.id}
+function dyNowId(prefix){return prefix+'_'+Date.now()+'_'+Math.random().toString(36).slice(2)}
+
+const dyGasV14=gas;
+gas=async function(action,payload={},options={}){
+  const silent=options&&options.silent===true;
+  const timeoutMs=Math.max(3000,Number(options&&options.timeoutMs||30000));
+  const loadingToken=silent?null:showLoading(DY_LOADING_MESSAGES[action]||'Đang xử lý...');
+  try{
+    if(!DY_GAS_WEB_APP_URL||DY_GAS_WEB_APP_URL.includes('PASTE_YOUR_'))throw new Error('Chưa cấu hình URL Apps Script trong DY_GAS_WEB_APP_URL.');
+    await waitForDyBridge();
+    const id='DY_REQ_'+Date.now()+'_'+(++dyRequestCounter);
+    return await new Promise((resolve,reject)=>{
+      const timeout=setTimeout(()=>{dyPendingRequests.delete(id);reject(new Error('Yêu cầu máy chủ quá thời gian chờ.'))},timeoutMs);
+      dyPendingRequests.set(id,{resolve,reject,timeout});
+      dyBridgeWindow.postMessage({type:'DY_GAS_REQUEST',id,action,payload,token:state.token},dyBridgeOrigin)
+    })
+  }finally{if(loadingToken)hideLoading(loadingToken)}
+};
+
+const dyBootstrapV14=bootstrap;
+bootstrap=async function(){
+  await dyBootstrapV14();
+  if(state.user){
+    state.itemQueue=dyLoadJson(dyQueueKey('DY_ITEM_QUEUE_V15'),[]);
+    state.finishQueue=dyLoadJson(dyQueueKey('DY_FINISH_QUEUE_V15'),[]);
+    dyUpdateItemSaveIndicator();dyUpdateFinishPanel();
+    dyScheduleItemBatch(80);dyScheduleFinishWorker(180);
+  }
+};
+
+const dyForceLogoutV14=forceLogout;
+forceLogout=function(){document.body.classList.remove('dispensing-focus');dyForceLogoutV14()};
+
+const dyShowPageV14=showPage;
+showPage=function(name){
+  if(name!=='detail')document.body.classList.remove('dispensing-focus');
+  dyShowPageV14(name);
+  if(name==='history')loadHistory();
+  if(name==='batches')dyUpdateFinishPanel();
+};
+
+const dyRefreshBatchesV14=refreshBatches;
+refreshBatches=async function(silent=false){
+  try{const r=await gas('listBatches',{},silent?{silent:true}:{});state.batches=r.batches||[];renderBatches();if(!silent)toast('Đã làm mới','success')}catch(e){if(!silent)toast(e.message,'error')}
+};
+
+const dyRenderDetailV14=renderDetail;
+renderDetail=function(){
+  dyRenderDetailV14();
+  dyApplyDispensingFocus();
+  dyDecoratePendingFinish();
+  dyUpdateItemSaveIndicator();
+};
+function dyApplyDispensingFocus(){
+  const focus=!!(state.sequence&&state.selectedPatient&&state.selectedPatient!=='__all__');
+  document.body.classList.toggle('dispensing-focus',focus);
+}
+function dyFinishJobKey(job){return job.kind==='patient'?'patient:'+job.voucherId:job.kind+':'+job.batchId}
+function dyHasFinishJob(kind,id){return state.finishQueue.some(j=>dyFinishJobKey(j)===(kind==='patient'?'patient:'+id:kind+':'+id))}
+function dyDecoratePendingFinish(){
+  if(!state.batch)return;
+  state.batch.patients.forEach(p=>p._finishPending=dyHasFinishJob('patient',p.voucherId));
+}
+
+renderPatientCard=function(p,interactive){
+  const active=p.items.filter(i=>!i.isSeparated);
+  const rows=active.length?active.map((it,i)=>`<tr data-dy-kind="patient" data-dy-id="${esc(it.itemId)}" class="item-row ${it.dispensed?'done':''}" ${interactive&&p.state!=='DONE'&&p.state!=='AUTO_DONE'&&!p._finishPending?`onclick="togglePatientItem('${esc(it.itemId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} ${p._finishPending?'disabled':''} onclick="event.stopPropagation();togglePatientItem('${esc(it.itemId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalQty)}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">Toàn bộ vị thuốc đã chuyển sang phiếu tách riêng.</td></tr>`;
+  const stateText=p._finishPending?'Đang chốt nền':stateLabel(p.state);
+  const badgeClass=p._finishPending?'finish-pending-badge':esc(p.state);
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span>${p.room?`<span><b>Phòng:</b> ${esc(p.room)}</span>`:''}${p.bed?`<span><b>Giường:</b> ${esc(p.bed)}</span>`:''}</div></div><span class="badge ${badgeClass}">${stateText}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`
+};
+renderSeparatedCard=function(interactive){
+  const b=state.batch,pending=dyHasFinishJob('separated',b.batchId);
+  const rows=b.separatedItems.map((it,i)=>`<tr data-dy-kind="separated" data-dy-id="${esc(it.separatedId)}" class="item-row ${it.dispensed?'done':''}" ${interactive&&b.separatedState!=='DONE'&&!pending?`onclick="toggleSeparatedItem('${esc(it.separatedId)}',${!it.dispensed})"`:''}><td class="stt">${interactive?`<input class="check" type="checkbox" ${it.dispensed?'checked':''} ${pending?'disabled':''} onclick="event.stopPropagation();toggleSeparatedItem('${esc(it.separatedId)}',this.checked)">`:i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalTotal)}</td></tr>`).join('');
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div><span class="badge ${pending?'finish-pending-badge':esc(b.separatedState)}">${pending?'Đang chốt nền':stateLabel(b.separatedState)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit">Đơn vị</th><th class="qty">Tổng số lượng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`
+};
+
+function dyFindLocalItem(kind,id){
+  if(!state.batch)return null;
+  if(kind==='separated')return state.batch.separatedItems.find(x=>x.separatedId===id)||null;
+  for(const p of state.batch.patients){const it=p.items.find(x=>x.itemId===id);if(it)return it}
+  return null;
+}
+function dyQueueItemAction(kind,id,dispensed){
+  const item=dyFindLocalItem(kind,id);if(!item)return;
+  const expectedVersion=Number(item.version||1);
+  item.dispensed=!!dispensed;
+  const action={kind,id,dispensed:!!dispensed,expectedVersion,clientActionId:dyNowId('A'),batchId:state.batch.batchId,voucherId:kind==='patient'?dyVoucherForItem(id):''};
+  const key=dyActionKey(action);
+  state.itemQueue=state.itemQueue.filter(x=>dyActionKey(x)!==key);
+  state.itemQueue.push(action);
+  dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);
+  dyApplyItemVisual(kind,id,!!dispensed);
+  dyUpdateItemSaveIndicator();dyScheduleItemBatch(180)
+}
+function dyVoucherForItem(itemId){if(!state.batch)return'';for(const p of state.batch.patients){if(p.items.some(i=>i.itemId===itemId))return p.voucherId}return''}
+function dyApplyItemVisual(kind,id,dispensed){
+  const row=document.querySelector(`[data-dy-kind="${kind}"][data-dy-id="${window.CSS&&window.CSS.escape?window.CSS.escape(id):id}"]`);
+  if(row){row.classList.toggle('done',dispensed);const c=row.querySelector('.check');if(c)c.checked=dispensed;row.setAttribute('onclick',kind==='patient'?`togglePatientItem('${id.replace(/'/g,"\\'")}',${!dispensed})`:`toggleSeparatedItem('${id.replace(/'/g,"\\'")}',${!dispensed})`)}
+}
+togglePatientItem=function(itemId,dispensed){dyQueueItemAction('patient',String(itemId),dispensed===true)};
+toggleSeparatedItem=function(separatedId,dispensed){dyQueueItemAction('separated',String(separatedId),dispensed===true)};
+
+function dyScheduleItemBatch(delay=180){
+  if(state.itemBatchRunning||!state.itemQueue.length||!state.token)return;
+  clearTimeout(state.itemBatchTimer);state.itemBatchTimer=setTimeout(dyProcessItemBatch,delay)
+}
+async function dyProcessItemBatch(){
+  if(state.itemBatchRunning||!state.itemQueue.length||!state.token)return;
+  clearTimeout(state.itemBatchRetryTimer);state.itemBatchRunning=true;dyUpdateItemSaveIndicator();
+  const sent=state.itemQueue.slice(0,25).map(x=>({...x}));
+  try{
+    const r=await gas('saveItemActionsBatch',{actions:sent},{silent:true,timeoutMs:15000});
+    (r.results||[]).forEach(result=>{
+      const key=result.kind+':'+result.id;
+      const current=state.itemQueue.find(x=>dyActionKey(x)===key);
+      const sentAction=sent.find(x=>x.clientActionId===result.clientActionId)||sent.find(x=>dyActionKey(x)===key);
+      if(current&&sentAction&&current.clientActionId===sentAction.clientActionId){
+        state.itemQueue=state.itemQueue.filter(x=>x.clientActionId!==current.clientActionId)
+      }else if(current&&result.version){current.expectedVersion=Number(result.version)}
+      const local=dyFindLocalItem(result.kind,result.id);
+      const newer=state.itemQueue.find(x=>dyActionKey(x)===key);
+      if(local&&(!newer||newer.clientActionId===(sentAction&&sentAction.clientActionId))){local.dispensed=!!result.dispensed;local.version=Number(result.version||local.version||1);dyApplyItemVisual(result.kind,result.id,local.dispensed)}
+      if(result.conflict)toast(result.message||'Vị thuốc vừa được thiết bị khác cập nhật.','error');
+      if(result.ok===false)toast(result.message||'Không lưu được vị thuốc.','error')
+    });
+    dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue)
+  }catch(e){
+    sent.forEach(a=>{const cur=state.itemQueue.find(x=>x.clientActionId===a.clientActionId);if(cur)cur.attempts=Number(cur.attempts||0)+1});
+    dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);
+    clearTimeout(state.itemBatchRetryTimer);state.itemBatchRetryTimer=setTimeout(dyProcessItemBatch,Math.min(5000,700+Math.max(...sent.map(x=>Number(x.attempts||0)))*500))
+  }finally{
+    state.itemBatchRunning=false;dyUpdateItemSaveIndicator();if(state.itemQueue.length)dyScheduleItemBatch(220);dyScheduleFinishWorker(120)
+  }
+}
+function dyUpdateItemSaveIndicator(){
+  const el=$('itemSaveIndicator');if(!el)return;
+  const count=state.itemQueue.length;
+  if(!count&&!state.itemBatchRunning){el.classList.add('hidden');el.classList.remove('error');return}
+  el.classList.remove('hidden');el.classList.toggle('error',state.itemQueue.some(x=>Number(x.attempts||0)>=4));
+  el.textContent=state.itemQueue.some(x=>Number(x.attempts||0)>=4)?`Đang thử lưu lại ${count} vị thuốc...`:`Đang lưu ${Math.max(count,1)} vị thuốc...`
+}
+function dyHasPendingItemsForJob(job){
+  return state.itemQueue.some(a=>a.batchId===job.batchId&&(job.kind==='batch'||job.kind==='separated'||a.voucherId===job.voucherId))||state.itemBatchRunning
+}
+
+function dyEnqueueFinish(job){
+  const key=dyFinishJobKey(job);if(state.finishQueue.some(x=>dyFinishJobKey(x)===key))return;
+  state.finishQueue.push({...job,jobId:dyNowId('F'),attempts:0,nextAttemptAt:0,status:'pending'});
+  dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);dyUpdateFinishPanel();dyScheduleFinishWorker(120)
+}
+function dyScheduleFinishWorker(delay=180){
+  if(state.finishRunning||!state.finishQueue.length||!state.token)return;
+  clearTimeout(state.finishRetryTimer);state.finishRetryTimer=setTimeout(dyProcessFinishQueue,delay)
+}
+async function dyProcessFinishQueue(){
+  if(state.finishRunning||!state.finishQueue.length||!state.token)return;
+  const now=Date.now();
+  let job=state.finishQueue.find(j=>Number(j.nextAttemptAt||0)<=now);
+  if(!job){const next=Math.min(...state.finishQueue.map(j=>Number(j.nextAttemptAt||now+1000)));dyScheduleFinishWorker(Math.max(300,next-now));return}
+  if(job.kind==='batch'){
+    const blockers=state.finishQueue.some(j=>j!==job&&j.batchId===job.batchId&&(j.kind==='patient'||j.kind==='separated'));
+    if(blockers||dyHasPendingItemsForJob(job)){dyScheduleItemBatch(20);dyScheduleFinishWorker(350);return}
+  }else if(dyHasPendingItemsForJob(job)){dyScheduleItemBatch(20);dyScheduleFinishWorker(300);return}
+  state.finishRunning=true;job.status='running';dyUpdateFinishPanel();
+  try{
+    let r;
+    if(job.kind==='patient')r=await gas('finishPatient',{voucherId:job.voucherId},{silent:true,timeoutMs:16000});
+    else if(job.kind==='separated')r=await gas('finishSeparated',{batchId:job.batchId},{silent:true,timeoutMs:16000});
+    else r=await gas('finishBatch',{batchId:job.batchId},{silent:true,timeoutMs:18000});
+    state.finishQueue=state.finishQueue.filter(x=>x.jobId!==job.jobId);
+    if(r.batch&&state.batch&&r.batch.batchId===state.batch.batchId)state.batch=r.batch;
+    if(r.batches)state.batches=r.batches;
+    dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);
+    await refreshBatches(true);
+    if(state.batch)renderDetail();renderBatches();
+    if(job.kind==='patient')toast(`Đã chốt nền phiếu ${job.patientName||''}`.trim(),'success');
+    if(job.kind==='batch')toast('Đã hoàn thành đợt phát','success')
+  }catch(e){
+    job.attempts=Number(job.attempts||0)+1;job.status=job.attempts>=8?'error':'pending';job.lastError=e.message;job.nextAttemptAt=Date.now()+Math.min(15000,900+job.attempts*1200);
+    dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue)
+  }finally{
+    state.finishRunning=false;dyUpdateFinishPanel();if(state.finishQueue.length)dyScheduleFinishWorker(450)
+  }
+}
+function dyUpdateFinishPanel(){
+  const el=$('backgroundFinishPanel');if(!el)return;
+  if(!state.finishQueue.length){el.classList.add('hidden');el.classList.remove('error');return}
+  const failed=state.finishQueue.filter(j=>j.status==='error').length;
+  el.classList.remove('hidden');el.classList.toggle('error',failed>0);
+  el.onclick=failed?retryBackgroundFinishes:null;
+  el.textContent=failed?`⚠ ${failed} phiếu chốt nền chưa thành công. Bấm để thử lại.`:`⏳ Đang chốt nền ${state.finishQueue.length} phiếu. Bạn có thể tiếp tục phát.`
+}
+function retryBackgroundFinishes(){state.finishQueue.forEach(j=>{j.status='pending';j.attempts=0;j.nextAttemptAt=0});dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);dyUpdateFinishPanel();dyScheduleFinishWorker(30)}
+
+function dyPatientAllChecked(p){return p.items.filter(i=>!i.isSeparated).every(i=>i.dispensed)}
+function dySeparatedAllChecked(){return state.batch.separatedItems.every(i=>i.dispensed)}
+function dyNextPatientNotQueued(){return state.batch.patients.find(p=>!['DONE','AUTO_DONE'].includes(p.state)&&!dyHasFinishJob('patient',p.voucherId))||null}
+function dyAllPatientsDoneOrQueued(){return state.batch.patients.every(p=>['DONE','AUTO_DONE'].includes(p.state)||dyHasFinishJob('patient',p.voucherId))}
+
+finishCurrentVoucher=async function(){
+  const b=state.batch;if(!b)return;
+  if(state.selectedPatient==='__separated__'){
+    if(!dySeparatedAllChecked()){const miss=b.separatedItems.filter(i=>!i.dispensed);toast(`Còn ${miss.length} vị thuốc chưa phát: ${miss.slice(0,6).map(i=>i.herbName).join(', ')}`,'error');return}
+    dyEnqueueFinish({kind:'separated',batchId:b.batchId,patientName:'Phiếu vị thuốc tách riêng'});
+    const next=dyNextPatientNotQueued();if(next)openPatient(next.voucherId);else{if(dyAllPatientsDoneOrQueued())dyEnqueueFinish({kind:'batch',batchId:b.batchId});state.batch=null;state.sequence=false;showPage('batches');renderBatches()}
+    return
+  }
+  const p=b.patients.find(x=>x.voucherId===state.selectedPatient);if(!p)return;
+  if(!dyPatientAllChecked(p)){const miss=p.items.filter(i=>!i.isSeparated&&!i.dispensed);toast(`Còn ${miss.length} vị thuốc chưa phát: ${miss.slice(0,6).map(i=>i.herbName).join(', ')}`,'error');return}
+  dyEnqueueFinish({kind:'patient',batchId:b.batchId,voucherId:p.voucherId,patientName:p.patientName});p._finishPending=true;
+  const next=dyNextPatientNotQueued();
+  if(next){openPatient(next.voucherId)}else{
+    if(dyAllPatientsDoneOrQueued()&&(!b.separatedItems.length||b.separatedState==='DONE'||dyHasFinishJob('separated',b.batchId)))dyEnqueueFinish({kind:'batch',batchId:b.batchId});
+    state.batch=null;state.sequence=false;document.body.classList.remove('dispensing-focus');showPage('batches');renderBatches();toast('Phiếu đang được chốt nền. Có thể mở đợt khác.','success')
+  }
+};
+attemptFinishBatch=async function(){
+  if(!state.batch)return;
+  const ok=await confirmBox('Hoàn thành đợt phát','Hệ thống sẽ chốt nền và kiểm tra lại toàn bộ bệnh nhân, vị thuốc. Nếu còn sót, trạng thái lỗi sẽ được giữ để thử lại.','Chốt nền');if(!ok)return;
+  dyEnqueueFinish({kind:'batch',batchId:state.batch.batchId});state.batch=null;state.sequence=false;showPage('batches');renderBatches()
+};
+
+async function loadHistory(){
+  try{const r=await gas('listHistory');state.history=r.history||[];state.historyDays=r.days||10;$('historySubtitle').textContent=`${state.historyDays} ngày gần nhất`;renderHistory()}catch(e){toast(e.message,'error')}
+}
+function dyHistoryDay(iso){if(!iso)return'';const d=new Date(iso);return isNaN(d)?'Không rõ ngày':d.toLocaleDateString('vi-VN')}
+function renderHistory(){
+  const host=$('historyList');if(!host)return;const q=norm($('historySearch')?$('historySearch').value:'');
+  const rows=(state.history||[]).filter(x=>!q||norm(`${x.patientName} ${x.patientCode} ${x.batchTitle} ${x.finishedBy}`).includes(q));
+  if(!rows.length){host.innerHTML='<div class="panel empty">Chưa có phiếu đã phát trong 10 ngày gần nhất.</div>';return}
+  let last='',html='';rows.forEach((x,i)=>{const day=dyHistoryDay(x.finishedAt);if(day!==last){html+=`<div class="history-day-title">Ngày ${esc(day)}</div>`;last=day}const special=x.type==='SEPARATED';html+=`<div class="history-card ${special?'SEPARATED':esc(x.state)}"><div class="row space"><div class="grow"><div class="history-name">${esc(x.patientName)}</div><div class="muted small">${x.patientCode?`Mã BN: ${esc(x.patientCode)} · `:''}${esc(x.batchTitle)}</div><div class="small" style="margin-top:5px">Đã phát lúc ${esc(fmtDateTime(x.finishedAt))} · Người phát: ${esc(x.finishedBy||'Không rõ')} · ${x.items.length} vị thuốc</div></div><button class="btn btn-blue btn-sm" onclick="openHistoryVoucher(${i})">Xem phiếu</button></div></div>`});host.innerHTML=html
+}
+function openHistoryVoucher(index){
+  const q=norm($('historySearch')?$('historySearch').value:'');const rows=(state.history||[]).filter(x=>!q||norm(`${x.patientName} ${x.patientCode} ${x.batchTitle} ${x.finishedBy}`).includes(q));const x=rows[index];if(!x)return;
+  $('modalHost').innerHTML=`<div class="modal-backdrop"><div class="modal"><div class="row space"><div><h2 style="margin:0">${esc(x.patientName)}</h2><div class="muted">${x.patientCode?`Mã BN: ${esc(x.patientCode)} · `:''}${esc(x.batchTitle)} · ${x.dayCount} ngày</div></div><button class="btn btn-light" onclick="closeModal()">✕</button></div><div class="preview-table-wrap" style="margin-top:12px"><table><thead><tr><th>STT</th><th>Tên vị thuốc</th><th>Đơn vị</th><th>Số lượng</th></tr></thead><tbody>${x.items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.herbName)}</td><td>${esc(it.unit)}</td><td>${fmtQty(it.quantity)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Phiếu được xử lý toàn bộ qua phiếu vị thuốc tách riêng.</td></tr>'}</tbody></table></div></div></div>`
+}
+
+window.addEventListener('online',()=>{dyScheduleItemBatch(20);dyScheduleFinishWorker(50)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){dyScheduleItemBatch(20);dyScheduleFinishWorker(50)}});
+window.addEventListener('beforeunload',()=>{dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue)});
+/* ================= END V1.5 ================= */
+
 window.addEventListener('load',()=>{
   startDyBridge();
   if('serviceWorker' in navigator){
