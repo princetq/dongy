@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.11</title>
+  <title>Phát thuốc Đông Y V1.14</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -286,6 +286,140 @@
     }
     /* ================= END V1.11 UI ================= */
 
+
+    /* ================= V1.13: đồng bộ nhãn trạng thái + nút loa + tô màu hàng đã phát ================= */
+    .batch-card .badge,
+    .patient-card-head .badge {
+      font-size:17px !important;
+      line-height:1.2 !important;
+      padding:8px 13px !important;
+      min-height:38px;
+      flex:0 0 auto;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+    }
+    .batch-card .badge.WAITING,
+    .patient-card-head .badge.WAITING { box-shadow:0 2px 8px rgba(122,86,0,.14); }
+    .batch-card .badge.PROGRESS,
+    .patient-card-head .badge.PROGRESS { box-shadow:0 2px 8px rgba(13,71,161,.14); }
+    .batch-card .badge.DONE,
+    .batch-card .badge.AUTO_DONE,
+    .patient-card-head .badge.DONE,
+    .patient-card-head .badge.AUTO_DONE { box-shadow:0 2px 8px rgba(27,94,32,.14); }
+    .speak-btn{
+      width:38px;
+      height:38px;
+      min-width:38px;
+      min-height:38px;
+      padding:0;
+      border:1px solid #90caf9;
+      border-radius:50%;
+      background:#e3f2fd;
+      color:#0d47a1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      line-height:1;
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(13,71,161,.12);
+      touch-action:manipulation;
+    }
+    .speak-btn:active,
+    .speak-btn.speaking{transform:scale(.94);background:#bbdefb}
+    .item-row.done,
+    .item-row.done > td{
+      background:#c8e6c9 !important;
+      color:#1b5e20 !important;
+    }
+    .item-row.done > td:nth-child(2),
+    .item-row.done > td.qty{font-weight:900 !important}
+    .item-row[role="button"]{outline:none}
+    .item-row[role="button"]:focus-visible{box-shadow:inset 0 0 0 3px rgba(46,125,50,.28)}
+    @media(max-width:760px){
+      .batch-card .badge,
+      .patient-card-head .badge{
+        font-size:17px !important;
+        padding:8px 12px !important;
+        min-height:38px;
+      }
+      .speak-btn{
+        width:40px;
+        height:40px;
+        min-width:40px;
+        min-height:40px;
+        font-size:21px;
+      }
+      .patient-card .patient-body .stt{width:48px;min-width:48px}
+    }
+    /* ================= END V1.13 UI ================= */
+
+
+    /* ================= V1.14: thoát tùy chọn + loa đọc lặp toàn phiếu ================= */
+    .patient-card-status-tools{
+      display:inline-flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      flex:0 0 auto;
+      flex-wrap:nowrap;
+    }
+    .card-speak-btn{
+      width:38px;
+      height:38px;
+      min-width:38px;
+      min-height:38px;
+      padding:0;
+      border:1px solid #7fb3df;
+      border-radius:50%;
+      background:#eef7ff;
+      color:#0d47a1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      line-height:1;
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(13,71,161,.13);
+      touch-action:manipulation;
+    }
+    .card-speak-btn.active{
+      background:#bbdefb;
+      border-color:#1976d2;
+      box-shadow:0 0 0 4px rgba(25,118,210,.15);
+      animation:dyCardSpeakerPulse 1.25s ease-in-out infinite;
+    }
+    @keyframes dyCardSpeakerPulse{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(.92)}
+    }
+    .dy-exit-choice-note{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#fff8e1;
+      color:#6d4c00;
+      font-size:14px;
+      line-height:1.45;
+    }
+    @media(max-width:760px){
+      .patient-card-head .row.space{
+        align-items:flex-start;
+      }
+      .patient-card-status-tools{
+        gap:6px;
+      }
+      .card-speak-btn{
+        width:38px;
+        height:38px;
+        min-width:38px;
+        min-height:38px;
+        font-size:20px;
+      }
+    }
+    /* ================= END V1.14 UI ================= */
+
 </style>
 </head>
 <body>
@@ -343,7 +477,7 @@
         <button class="btn btn-light" onclick="previousPatient()">← Trước</button>
         <button class="btn btn-blue" onclick="nextPatient()">Tiếp →</button>
         <button id="finishCurrentButton" class="btn btn-green" onclick="finishCurrentVoucher()" title="Chốt bệnh nhân hiện tại">✓ Chốt BN</button>
-        <button id="exitBatchSequenceButton" class="btn btn-red" onclick="requestExitBatch()" title="Lưu tiến độ và trở về danh sách phiếu">💾 Lưu và thoát</button>
+        <button id="exitBatchSequenceButton" class="btn btn-red" onclick="requestSaveAndExitBatch()" title="Lưu tiến độ và trở về danh sách phiếu">💾 Lưu và thoát</button>
       </div>
     </section>
 
@@ -387,7 +521,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_11';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_12';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_7';
@@ -436,7 +570,7 @@ function waitForDyBridge(timeoutMs=30000){
       if(dyBridgeReady&&dyBridgeWindow){clearInterval(timer);resolve();return}
       if(Date.now()-started>timeoutMs){
         clearInterval(timer);
-        reject(new Error('Không nhận được tín hiệu Bridge V1.7. Hãy mở trực tiếp URL /exec: nếu không thấy “API Bridge Đông Y V1.7 đang hoạt động”, hãy kiểm tra deployment và file Bridge.html.'))
+        reject(new Error('Không nhận được tín hiệu Bridge V1.13. Hãy mở trực tiếp URL /exec: nếu không thấy “API Bridge Đông Y V1.13 đang hoạt động”, hãy kiểm tra deployment và file Bridge.html.'))
       }
     },100)
   })
@@ -781,8 +915,80 @@ async function finishCurrentVoucher(){if(state.selectedPatient==='__separated__'
 async function attemptFinishBatch(){const ok=await confirmBox('Hoàn thành đợt phát','Hệ thống sẽ kiểm tra lại toàn bộ bệnh nhân và toàn bộ vị thuốc. Nếu còn sót, đợt phát sẽ không được hoàn thành.','Kiểm tra và hoàn thành');if(!ok)return;try{const r=await gas('finishBatch',{batchId:state.batch.batchId});state.batches=r.batches||[];state.batch=null;state.sequence=false;renderBatches();showPage('batches');toast('Đã hoàn thành toàn bộ đợt phát','success')}catch(e){toast(e.message,'error')}}
 async function requestExitBatch(){const b=state.batch;const remaining=b.patients.filter(p=>!['DONE','AUTO_DONE'].includes(p.state)).length;const ok=await confirmBox('Chưa phát xong',`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân.\nCòn ${remaining} bệnh nhân chưa hoàn thành.\nTiến độ sẽ được lưu và đợt chuyển sang “Đang phát”.`,'Lưu và thoát','Tiếp tục phát');if(!ok)return;try{const r=await gas('exitBatch',{batchId:b.batchId});state.batches=r.batches||[];state.batch=null;state.sequence=false;renderBatches();showPage('batches');toast('Đã lưu tiến độ','success')}catch(e){toast(e.message,'error')}}
 async function reloadCurrentBatch(){if(!state.batch)return;try{const r=await gas('getBatch',{batchId:state.batch.batchId});state.batch=r.batch;renderDetail()}catch(e){toast(e.message,'error')}}
-async function resetBatch(id){const ok=await confirmBox('Đặt lại tiến độ','Toàn bộ dấu đã phát và trạng thái hoàn thành sẽ bị xóa. Số ngày chung và cấu hình vị thuốc tách riêng vẫn được giữ.','Đặt lại');if(!ok)return;try{const r=await gas('resetBatch',{batchId:id});state.batch=r.batch;await refreshBatches();toast('Đã đặt lại tiến độ','success')}catch(e){toast(e.message,'error')}}
-async function deleteBatch(id){const ok=await confirmBox('Xóa đợt phát','Tất cả bệnh nhân, vị thuốc và tiến độ của đợt sẽ bị xóa khỏi Google Sheet. Không thể hoàn tác.','Xóa vĩnh viễn');if(!ok)return;try{const r=await gas('deleteBatch',{batchId:id});state.batches=r.batches||[];renderBatches();toast('Đã xóa đợt phát','success')}catch(e){toast(e.message,'error')}}
+function dyClearBatchLocalState(batchId, removeCard) {
+  batchId = String(batchId || '');
+  if (!batchId) return;
+
+  state.itemQueue = (state.itemQueue || []).filter(x => String(x.batchId || '') !== batchId);
+  state.finishQueue = (state.finishQueue || []).filter(x => String(x.batchId || '') !== batchId);
+  dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'), state.itemQueue);
+  dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'), state.finishQueue);
+
+  dyDetailMemoryCache.delete(batchId);
+  try { sessionStorage.removeItem(detailCacheKey(batchId)); } catch (e) {}
+
+  if (state.batch && String(state.batch.batchId) === batchId) {
+    state.batch = null;
+    state.sequence = false;
+    state.selectedPatient = '';
+    document.body.classList.remove('dispensing-focus');
+  }
+
+  if (removeCard) {
+    state.batches = (state.batches || []).filter(x => String(x.batchId) !== batchId);
+  }
+
+  dyUpdateItemSaveIndicator();
+  dyUpdateFinishPanel();
+  saveBootstrapCache();
+}
+
+async function resetBatch(id) {
+  const ok = await confirmBox(
+    'Đặt lại tiến độ',
+    'Toàn bộ dấu đã phát và trạng thái hoàn thành sẽ bị xóa. Số ngày chung và cấu hình vị thuốc tách riêng vẫn được giữ.',
+    'Đặt lại'
+  );
+  if (!ok) return;
+
+  try {
+    const r = await gas('resetBatch', { batchId: id }, {
+      message: 'Đang đặt lại phiếu...',
+      timeoutMs: 120000
+    });
+    dyClearBatchLocalState(id, false);
+    if (r.batch) writeBatchDetailCache(r.batch);
+    state.batches = r.batches || state.batches || [];
+    renderBatches();
+    saveBootstrapCache();
+    toast('Đã đặt lại toàn bộ tiến độ của phiếu', 'success');
+  } catch (e) {
+    toast('Không đặt lại được phiếu: ' + e.message, 'error');
+  }
+}
+
+async function deleteBatch(id) {
+  const ok = await confirmBox(
+    'Xóa phiếu phát',
+    'Tất cả bệnh nhân, vị thuốc và tiến độ của phiếu sẽ bị xóa khỏi Google Sheet. Không thể hoàn tác.',
+    'Xóa vĩnh viễn'
+  );
+  if (!ok) return;
+
+  try {
+    const r = await gas('deleteBatch', { batchId: id }, {
+      message: 'Đang xóa phiếu...',
+      timeoutMs: 120000
+    });
+    dyClearBatchLocalState(id, true);
+    state.batches = r.batches || state.batches || [];
+    renderBatches();
+    saveBootstrapCache();
+    toast('Đã xóa phiếu phát', 'success');
+  } catch (e) {
+    toast('Không xóa được phiếu: ' + e.message, 'error');
+  }
+}
 async function parseExcelFile(){const file=$('excelFile').files[0];if(!file)return;if(typeof XLSX==='undefined'){toast('Không tải được thư viện đọc Excel. Hãy kiểm tra Internet.','error');return}const loadingToken=showLoading('Đang đọc và kiểm tra phiếu Excel...');try{const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array',cellDates:false});const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});state.parsedImport=parseWorkbookRows(rows);renderImportPreview()}catch(e){state.parsedImport=null;$('importPreview').innerHTML=`<div class="danger-text">${esc(e.message)}</div>`}finally{hideLoading(loadingToken)}}
 function parseWorkbookRows(rows){let headerRow=-1;for(let i=0;i<Math.min(rows.length,40);i++){const ns=rows[i].map(norm);if(ns.includes('ma bn')&&ns.some(x=>x.includes('ho & ten')||x==='ho ten')&&ns.includes('nam sinh')){headerRow=i;break}}if(headerRow<0)throw new Error('Không tìm thấy dòng tiêu đề có Mã BN, Họ & tên và Năm sinh.');const header=rows[headerRow].map(x=>String(x||'').trim());const find=(patterns)=>header.findIndex(h=>patterns.some(p=>norm(h).includes(p)));const iRoom=find(['phong']),iBed=find(['giuong']),iCode=find(['ma bn']),iName=find(['ho & ten','ho ten']),iGender=find(['gioi tinh']),iBirth=find(['nam sinh']);const herbStart=iBirth+1;if(iCode<0||iName<0||iBirth<0||herbStart>=header.length)throw new Error('Cấu trúc cột không hợp lệ.');const herbCols=[];for(let c=herbStart;c<header.length;c++){const name=String(header[c]||'').split('//')[0].trim();if(name)herbCols.push({col:c,name})}let dateFrom='',dateTo='';for(let i=0;i<headerRow;i++){const text=rows[i].join(' ');const m=text.match(/Từ ngày\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*đến ngày\s*(\d{1,2}\/\d{1,2}\/\d{4})/i);if(m){dateFrom=toIsoDate(m[1]);dateTo=toIsoDate(m[2]);break}}const patients=[];for(let r=headerRow+1;r<rows.length;r++){const row=rows[r];const code=String(row[iCode]||'').trim();const name=String(row[iName]||'').trim();if(!code||!name)continue;if(norm(name).includes('tong cong'))continue;const items=[];herbCols.forEach(h=>{const raw=String(row[h.col]||'').replace(/\s/g,'').replace(',','.');const qty=Number(raw);if(isFinite(qty)&&qty>0)items.push({herbName:h.name,quantity:qty})});if(!items.length)continue;patients.push({room:iRoom>=0?String(row[iRoom]||'').trim():'',bed:iBed>=0?String(row[iBed]||'').trim():'',patientCode:code,patientName:name,gender:iGender>=0?String(row[iGender]||'').trim():'',birthYear:Number(String(row[iBirth]||'').replace(/\D/g,''))||'',items})}if(!patients.length)throw new Error('Không tìm thấy bệnh nhân có vị thuốc.');return{dateFrom,dateTo,patients,herbCount:herbCols.length,headerRow:headerRow+1}}
 function toIsoDate(s){const m=String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:''}
@@ -1153,6 +1359,442 @@ renderDetail=function(){
   dySyncFocusControlsToggle();
 };
 /* ================= END V1.7 ================= */
+
+
+
+/* ================= V1.13 SPEECH / INSTANT NAVIGATION / BACKGROUND EXIT ================= */
+Object.assign(state,{exitQueue:[],exitQueueRunning:false,exitQueueTimer:null});
+
+function dySpeechUnit(unit){
+  const raw=String(unit||'').trim();
+  const key=norm(raw).replace(/\./g,'');
+  const map={
+    g:'gam',gram:'gam',gam:'gam',
+    mg:'mi li gam',mcg:'mi crô gam',ug:'mi crô gam',
+    kg:'ki lô gam',ml:'mi li lít',l:'lít',lit:'lít',
+    vien:'viên',goi:'gói',thang:'thang',ong:'ống',chai:'chai',lo:'lọ'
+  };
+  return map[key]||raw;
+}
+function dySpeechQuantity(value){
+  const n=Number(String(value).replace(',','.'));
+  return Number.isFinite(n)?n.toLocaleString('vi-VN',{maximumFractionDigits:3}):String(value||'');
+}
+function dySpeakHerbButton(button){
+  if(!button)return;
+  const herb=String(button.dataset.herb||'').trim();
+  const qty=dySpeechQuantity(button.dataset.qty||'');
+  const unit=dySpeechUnit(button.dataset.unit||'');
+  const text=[herb,qty,unit].filter(Boolean).join(' ')+'.';
+  if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){
+    toast('Thiết bị này không hỗ trợ đọc tiếng Việt.','error');
+    return;
+  }
+  try{
+    window.speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance(text);
+    utterance.lang='vi-VN';
+    utterance.rate=.9;
+    utterance.pitch=1;
+    utterance.volume=1;
+    const voices=window.speechSynthesis.getVoices()||[];
+    const voice=voices.find(v=>String(v.lang||'').toLowerCase()==='vi-vn')||voices.find(v=>String(v.lang||'').toLowerCase().startsWith('vi'));
+    if(voice)utterance.voice=voice;
+    button.classList.add('speaking');
+    utterance.onend=()=>button.classList.remove('speaking');
+    utterance.onerror=()=>button.classList.remove('speaking');
+    window.speechSynthesis.speak(utterance);
+  }catch(e){
+    button.classList.remove('speaking');
+    toast('Không đọc được tên vị thuốc.','error');
+  }
+}
+function dySpeakButtonHtml(herb,qty,unit){
+  return `<button type="button" class="speak-btn" data-herb="${esc(herb)}" data-qty="${esc(qty)}" data-unit="${esc(unit)}" onclick="event.stopPropagation();dySpeakHerbButton(this)" aria-label="Đọc ${esc(herb)} ${esc(qty)} ${esc(unit)}" title="Đọc tên vị thuốc và số lượng">🔊</button>`;
+}
+function dyInteractiveRowAttrs(kind,id,nextValue,enabled){
+  if(!enabled)return'';
+  const fn=kind==='patient'?'togglePatientItem':'toggleSeparatedItem';
+  const safe=String(id).replace(/'/g,"\\'");
+  return `role="button" tabindex="0" aria-pressed="${nextValue?'false':'true'}" onclick="${fn}('${safe}',${nextValue})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${fn}('${safe}',${nextValue})}"`;
+}
+
+renderPatientCard=function(p,interactive){
+  const active=p.items.filter(i=>!i.isSeparated);
+  const enabled=interactive&&p.state!=='DONE'&&p.state!=='AUTO_DONE'&&!p._finishPending;
+  const rows=active.length?active.map((it,i)=>{
+    const next=!it.dispensed;
+    return `<tr data-dy-kind="patient" data-dy-id="${esc(it.itemId)}" class="item-row ${it.dispensed?'done':''}" ${dyInteractiveRowAttrs('patient',it.itemId,next,enabled)}><td class="stt">${interactive?dySpeakButtonHtml(it.herbName,fmtQty(it.finalQty),it.unit):i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalQty)}</td></tr>`;
+  }).join(''):`<tr><td colspan="4" class="empty">Toàn bộ vị thuốc đã chuyển sang phiếu tách riêng.</td></tr>`;
+  const stateText=p._finishPending?'Đang chốt nền':stateLabel(p.state);
+  const badgeClass=p._finishPending?'finish-pending-badge':esc(p.state);
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span>${p.room?`<span><b>Phòng:</b> ${esc(p.room)}</span>`:''}${p.bed?`<span><b>Giường:</b> ${esc(p.bed)}</span>`:''}</div></div><span class="badge ${badgeClass}">${stateText}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+};
+renderSeparatedCard=function(interactive){
+  const b=state.batch,pending=dyHasFinishJob('separated',b.batchId);
+  const enabled=interactive&&b.separatedState!=='DONE'&&!pending;
+  const rows=b.separatedItems.map((it,i)=>{
+    const next=!it.dispensed;
+    return `<tr data-dy-kind="separated" data-dy-id="${esc(it.separatedId)}" class="item-row ${it.dispensed?'done':''}" ${dyInteractiveRowAttrs('separated',it.separatedId,next,enabled)}><td class="stt">${interactive?dySpeakButtonHtml(it.herbName,fmtQty(it.finalTotal),it.unit):i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalTotal)}</td></tr>`;
+  }).join('');
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div><span class="badge ${pending?'finish-pending-badge':esc(b.separatedState)}">${pending?'Đang chốt nền':stateLabel(b.separatedState)}</span></div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Tổng số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+};
+
+const dyApplyItemVisualV112=dyApplyItemVisual;
+dyApplyItemVisual=function(kind,id,dispensed){
+  dyApplyItemVisualV112(kind,id,dispensed);
+  const selector=`[data-dy-kind="${kind}"][data-dy-id="${window.CSS&&window.CSS.escape?window.CSS.escape(id):id}"]`;
+  const row=document.querySelector(selector);
+  if(row){
+    row.setAttribute('aria-pressed',dispensed?'true':'false');
+    const safe=String(id).replace(/'/g,"\\'");
+    const fn=kind==='patient'?'togglePatientItem':'toggleSeparatedItem';
+    row.setAttribute('onkeydown',`if(event.key==='Enter'||event.key===' '){event.preventDefault();${fn}('${safe}',${!dispensed})}`);
+  }
+};
+function dyMarkItemProgressLocally(kind,id,dispensed){
+  if(!dispensed||!state.batch)return;
+  if(kind==='patient'){
+    const voucherId=dyVoucherForItem(id);
+    const p=state.batch.patients.find(x=>x.voucherId===voucherId);
+    if(p&&p.state==='WAITING')p.state='PROGRESS';
+  }else if(state.batch.separatedState==='WAITING'){
+    state.batch.separatedState='PROGRESS';
+  }
+  if(state.batch.state!=='DONE')state.batch.state='PROGRESS';
+  const detailState=$('detailState');
+  if(detailState){detailState.className='badge PROGRESS';detailState.textContent='Đang phát';}
+  const currentBadge=document.querySelector('#detailContent .patient-card-head .badge');
+  if(currentBadge&&!currentBadge.classList.contains('finish-pending-badge')){
+    currentBadge.className='badge PROGRESS';currentBadge.textContent='Đang phát';
+  }
+  writeBatchDetailCache(state.batch);
+}
+const dyQueueItemActionV112=dyQueueItemAction;
+dyQueueItemAction=function(kind,id,dispensed){
+  dyMarkItemProgressLocally(kind,id,dispensed===true);
+  dyQueueItemActionV112(kind,id,dispensed);
+};
+
+// Mở/chuyển phiếu con hoàn toàn tại máy. Trạng thái PROGRESS chỉ được ghi khi có vị thuốc thực sự được bôi màu.
+openPatient=function(id){
+  if(!state.batch)return;
+  const p=state.batch.patients.find(x=>x.voucherId===id);
+  if(!p)return;
+  state.selectedPatient=id;
+  state.sequence=true;
+  state.currentIndex=Math.max(0,state.batch.patients.indexOf(p));
+  const select=$('patientSelect');if(select)select.value=id;
+  renderDetail();
+};
+openSeparated=function(){
+  if(!state.batch)return;
+  state.selectedPatient='__separated__';
+  state.sequence=true;
+  const select=$('patientSelect');if(select)select.value='__separated__';
+  renderDetail();
+};
+
+function dyExitStorageKey(){return dyQueueKey('DY_EXIT_QUEUE_V113')}
+function dyLoadExitQueue(){
+  const rows=dyLoadJson(dyExitStorageKey(),[]);
+  state.exitQueue=Array.isArray(rows)?rows:[];
+}
+function dyPersistExitQueue(){dySaveJson(dyExitStorageKey(),state.exitQueue)}
+function dyScheduleExitWorker(delay=250){
+  if(state.exitQueueRunning||!state.exitQueue.length||!state.token)return;
+  clearTimeout(state.exitQueueTimer);
+  state.exitQueueTimer=setTimeout(dyProcessExitQueue,delay);
+}
+function dyQueueExitBatch(batchId){
+  batchId=String(batchId||'');if(!batchId)return;
+  state.exitQueue=state.exitQueue.filter(x=>String(x.batchId)!==batchId);
+  state.exitQueue.push({batchId,attempts:0,nextAttemptAt:0,savedAt:Date.now()});
+  dyPersistExitQueue();
+  showQuickStatus('Đang lưu tiến độ phiếu ở nền...');
+  dyScheduleExitWorker(180);
+}
+async function dyProcessExitQueue(){
+  if(state.exitQueueRunning||!state.exitQueue.length||!state.token)return;
+  const now=Date.now();
+  const job=state.exitQueue.find(x=>Number(x.nextAttemptAt||0)<=now);
+  if(!job){const next=Math.min(...state.exitQueue.map(x=>Number(x.nextAttemptAt||now+1000)));dyScheduleExitWorker(Math.max(300,next-now));return}
+  const pending=state.itemBatchRunning||state.itemQueue.some(x=>String(x.batchId)===String(job.batchId));
+  if(pending){dyScheduleItemBatch(20);dyScheduleExitWorker(350);return}
+  state.exitQueueRunning=true;
+  try{
+    const r=await gas('exitBatch',{batchId:job.batchId},{silent:true,timeoutMs:30000});
+    state.exitQueue=state.exitQueue.filter(x=>x!==job);
+    if(r&&Array.isArray(r.batches)){state.batches=r.batches;renderBatches();saveBootstrapCache()}
+    dyPersistExitQueue();
+    if(!state.exitQueue.length)hideQuickStatus();
+  }catch(e){
+    job.attempts=Number(job.attempts||0)+1;
+    job.nextAttemptAt=Date.now()+Math.min(20000,1000+job.attempts*1800);
+    dyPersistExitQueue();
+    showQuickStatus('Đang thử lưu lại trạng thái phiếu...');
+  }finally{
+    state.exitQueueRunning=false;
+    if(state.exitQueue.length)dyScheduleExitWorker(600);
+  }
+}
+
+requestExitBatch=async function(){
+  const b=state.batch;if(!b)return;
+  const remaining=b.patients.filter(p=>!['DONE','AUTO_DONE'].includes(p.state)).length;
+  const ok=await confirmBox('Chưa phát xong',`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân.\nCòn ${remaining} bệnh nhân chưa hoàn thành.\nMọi thao tác chưa gửi sẽ tiếp tục được lưu ở nền.`,`Lưu và thoát`,'Tiếp tục phát');
+  if(!ok)return;
+  const batchId=b.batchId;
+  const localHasProgress=b.patients.some(p=>p.state==='PROGRESS'||p.items.some(i=>i.dispensed))||b.separatedState==='PROGRESS'||b.separatedItems.some(i=>i.dispensed);
+  const card=state.batches.find(x=>String(x.batchId)===String(batchId));
+  if(card&&card.state!=='DONE'&&localHasProgress)card.state='PROGRESS';
+  dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);
+  dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);
+  dyQueueExitBatch(batchId);
+  state.batch=null;state.sequence=false;state.selectedPatient='__all__';
+  state.dispensingControlsOpen=false;
+  document.body.classList.remove('dispensing-focus','dispensing-controls-open');
+  renderBatches();showPage('batches');saveBootstrapCache();
+  dyScheduleItemBatch(20);dyScheduleFinishWorker(80);dyScheduleExitWorker(180);
+  toast('Đã lưu trên thiết bị và đang đồng bộ tiến độ ở nền.','success');
+};
+
+const dyApplyBootstrapPayloadV112=applyBootstrapPayload;
+applyBootstrapPayload=function(res,options={}){
+  dyApplyBootstrapPayloadV112(res,options);
+  dyLoadExitQueue();dyScheduleExitWorker(220);
+};
+const dyBootstrapV112=bootstrap;
+bootstrap=async function(){
+  await dyBootstrapV112();
+  if(state.user){dyLoadExitQueue();dyScheduleExitWorker(220)}
+};
+const dyForceLogoutV112=forceLogout;
+forceLogout=function(){
+  state.exitQueue=[];state.exitQueueRunning=false;clearTimeout(state.exitQueueTimer);
+  dyForceLogoutV112();
+};
+window.addEventListener('online',()=>dyScheduleExitWorker(80));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)dyScheduleExitWorker(100)});
+window.addEventListener('beforeunload',()=>dyPersistExitQueue());
+/* ================= END V1.13 ================= */
+
+
+/* ================= V1.14 EXIT CHOICE / CLEAN SPEECH / REPEATED CARD READER ================= */
+Object.assign(state,{
+  cardSpeechKey:'',
+  cardSpeechToken:0,
+  cardSpeechTimer:null
+});
+
+function dyCleanHerbName(name){
+  return String(name||'')
+    .replace(/^\s*vị\s+thuốc\s+cổ\s+truyền\s*/i,'')
+    .replace(/^[-–—:;,\.\s]+/,'')
+    .trim();
+}
+function dySpeechPhrase(herb,qty,unit){
+  const cleanHerb=dyCleanHerbName(herb)||String(herb||'').trim();
+  return [cleanHerb,dySpeechQuantity(qty),dySpeechUnit(unit)].filter(Boolean).join(' ')+'.';
+}
+function dyVietnameseVoice(){
+  const voices=window.speechSynthesis&&window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];
+  return voices.find(v=>String(v.lang||'').toLowerCase()==='vi-vn')||
+    voices.find(v=>String(v.lang||'').toLowerCase().startsWith('vi'))||null;
+}
+function dyStopCardSpeech(silent=false){
+  state.cardSpeechToken=Number(state.cardSpeechToken||0)+1;
+  clearTimeout(state.cardSpeechTimer);
+  state.cardSpeechTimer=null;
+  state.cardSpeechKey='';
+  try{if('speechSynthesis' in window)window.speechSynthesis.cancel()}catch(e){}
+  document.querySelectorAll('.card-speak-btn.active').forEach(btn=>{
+    btn.classList.remove('active');
+    btn.setAttribute('aria-pressed','false');
+    btn.title='Đọc lặp toàn bộ phiếu';
+  });
+  if(!silent)toast('Đã dừng đọc phiếu.','success');
+}
+function dyCardSpeechItems(kind,id){
+  if(!state.batch)return[];
+  if(kind==='separated'){
+    return (state.batch.separatedItems||[]).map(it=>({
+      herb:it.herbName,qty:fmtQty(it.finalTotal),unit:it.unit
+    }));
+  }
+  const p=(state.batch.patients||[]).find(x=>String(x.voucherId)===String(id));
+  if(!p)return[];
+  return (p.items||[]).filter(it=>!it.isSeparated).map(it=>({
+    herb:it.herbName,qty:fmtQty(it.finalQty),unit:it.unit
+  }));
+}
+function dyRefreshCardSpeakerButtons(){
+  document.querySelectorAll('.card-speak-btn').forEach(btn=>{
+    const key=String(btn.dataset.key||'');
+    const active=!!state.cardSpeechKey&&key===state.cardSpeechKey;
+    btn.classList.toggle('active',active);
+    btn.setAttribute('aria-pressed',active?'true':'false');
+    btn.title=active?'Bấm để dừng đọc lặp':'Đọc lặp toàn bộ phiếu';
+  });
+}
+function dyRunCardSpeechCycle(kind,id,token){
+  if(token!==state.cardSpeechToken||state.cardSpeechKey!==kind+':'+id)return;
+  const items=dyCardSpeechItems(kind,id);
+  if(!items.length){dyStopCardSpeech(true);toast('Phiếu này không có vị thuốc để đọc.','error');return}
+  let index=0;
+  const speakNext=()=>{
+    if(token!==state.cardSpeechToken||state.cardSpeechKey!==kind+':'+id)return;
+    if(index>=items.length){
+      state.cardSpeechTimer=setTimeout(()=>dyRunCardSpeechCycle(kind,id,token),10000);
+      return;
+    }
+    const item=items[index++];
+    try{
+      const utterance=new SpeechSynthesisUtterance(dySpeechPhrase(item.herb,item.qty,item.unit));
+      utterance.lang='vi-VN';
+      utterance.rate=.9;
+      utterance.pitch=1;
+      utterance.volume=1;
+      const voice=dyVietnameseVoice();if(voice)utterance.voice=voice;
+      utterance.onend=()=>setTimeout(speakNext,220);
+      utterance.onerror=()=>setTimeout(speakNext,350);
+      window.speechSynthesis.speak(utterance);
+    }catch(e){setTimeout(speakNext,350)}
+  };
+  speakNext();
+}
+function dyToggleCardSpeech(kind,id,button){
+  if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){
+    toast('Thiết bị này không hỗ trợ đọc tiếng Việt.','error');return;
+  }
+  const key=String(kind)+':'+String(id);
+  if(state.cardSpeechKey===key){dyStopCardSpeech();return}
+  dyStopCardSpeech(true);
+  state.cardSpeechKey=key;
+  state.cardSpeechToken=Number(state.cardSpeechToken||0)+1;
+  const token=state.cardSpeechToken;
+  try{window.speechSynthesis.cancel()}catch(e){}
+  dyRefreshCardSpeakerButtons();
+  toast('Đang đọc lặp toàn bộ phiếu. Bấm nút loa lần nữa để dừng.','success');
+  dyRunCardSpeechCycle(String(kind),String(id),token);
+}
+function dyCardSpeakerButtonHtml(kind,id,label){
+  const key=String(kind)+':'+String(id);
+  const active=state.cardSpeechKey===key;
+  return `<button type="button" class="card-speak-btn ${active?'active':''}" data-key="${esc(key)}" onclick="event.stopPropagation();dyToggleCardSpeech('${esc(kind)}','${esc(id)}',this)" aria-pressed="${active?'true':'false'}" aria-label="Đọc lặp ${esc(label)}" title="${active?'Bấm để dừng đọc lặp':'Đọc lặp toàn bộ phiếu'}">🔊</button>`;
+}
+
+// Đọc một vị thuốc: bỏ tiền tố “Vị thuốc cổ truyền” nếu nằm đầu tên.
+dySpeakHerbButton=function(button){
+  if(!button)return;
+  if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){
+    toast('Thiết bị này không hỗ trợ đọc tiếng Việt.','error');return;
+  }
+  dyStopCardSpeech(true);
+  try{
+    window.speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance(dySpeechPhrase(button.dataset.herb||'',button.dataset.qty||'',button.dataset.unit||''));
+    utterance.lang='vi-VN';utterance.rate=.9;utterance.pitch=1;utterance.volume=1;
+    const voice=dyVietnameseVoice();if(voice)utterance.voice=voice;
+    button.classList.add('speaking');
+    utterance.onend=()=>button.classList.remove('speaking');
+    utterance.onerror=()=>button.classList.remove('speaking');
+    window.speechSynthesis.speak(utterance);
+  }catch(e){button.classList.remove('speaking');toast('Không đọc được tên vị thuốc.','error')}
+};
+
+renderPatientCard=function(p,interactive){
+  const active=p.items.filter(i=>!i.isSeparated);
+  const enabled=interactive&&p.state!=='DONE'&&p.state!=='AUTO_DONE'&&!p._finishPending;
+  const rows=active.length?active.map((it,i)=>{
+    const next=!it.dispensed;
+    return `<tr data-dy-kind="patient" data-dy-id="${esc(it.itemId)}" class="item-row ${it.dispensed?'done':''}" ${dyInteractiveRowAttrs('patient',it.itemId,next,enabled)}><td class="stt">${interactive?dySpeakButtonHtml(it.herbName,fmtQty(it.finalQty),it.unit):i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalQty)}</td></tr>`;
+  }).join(''):`<tr><td colspan="4" class="empty">Toàn bộ vị thuốc đã chuyển sang phiếu tách riêng.</td></tr>`;
+  const stateText=p._finishPending?'Đang chốt nền':stateLabel(p.state);
+  const badgeClass=p._finishPending?'finish-pending-badge':esc(p.state);
+  const tools=`<div class="patient-card-status-tools">${dyCardSpeakerButtonHtml('patient',p.voucherId,p.patientName)}<span class="badge ${badgeClass}">${stateText}</span></div>`;
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">${esc(p.patientName)}</div><div class="patient-meta"><span><b>Tuổi:</b> ${esc(p.age)}</span><span><b>Mã BN:</b> ${esc(p.patientCode)}</span></div></div>${tools}</div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openPatient('${esc(p.voucherId)}')">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+};
+renderSeparatedCard=function(interactive){
+  const b=state.batch,pending=dyHasFinishJob('separated',b.batchId);
+  const enabled=interactive&&b.separatedState!=='DONE'&&!pending;
+  const rows=b.separatedItems.map((it,i)=>{
+    const next=!it.dispensed;
+    return `<tr data-dy-kind="separated" data-dy-id="${esc(it.separatedId)}" class="item-row ${it.dispensed?'done':''}" ${dyInteractiveRowAttrs('separated',it.separatedId,next,enabled)}><td class="stt">${interactive?dySpeakButtonHtml(it.herbName,fmtQty(it.finalTotal),it.unit):i+1}</td><td>${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.finalTotal)}</td></tr>`;
+  }).join('');
+  const tools=`<div class="patient-card-status-tools">${dyCardSpeakerButtonHtml('separated',b.batchId,'phiếu vị thuốc tách riêng')}<span class="badge ${pending?'finish-pending-badge':esc(b.separatedState)}">${pending?'Đang chốt nền':stateLabel(b.separatedState)}</span></div>`;
+  return `<div class="patient-card"><div class="patient-card-head"><div class="row space"><div><div class="patient-name">PHIẾU VỊ THUỐC TÁCH RIÊNG</div><div class="patient-meta"><span><b>Áp dụng:</b> toàn bộ bệnh nhân</span><span><b>Số ngày chung:</b> ${b.dayCount}</span></div></div>${tools}</div>${!interactive?`<div class="row" style="margin-top:8px"><button class="btn btn-blue btn-sm" onclick="openSeparated()">Mở phiếu này</button></div>`:''}</div><div class="patient-body"><table><thead><tr><th class="stt">STT</th><th>Tên vị thuốc</th><th class="unit"><span class="desktop-th-label">Đơn vị</span><span class="mobile-th-label">ĐV</span></th><th class="qty"><span class="desktop-th-label">Tổng số lượng</span><span class="mobile-th-label">SL</span></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+};
+
+const dyOpenPatientV113=openPatient;
+openPatient=function(id){dyStopCardSpeech(true);return dyOpenPatientV113(id)};
+const dyOpenSeparatedV113=openSeparated;
+openSeparated=function(){dyStopCardSpeech(true);return dyOpenSeparatedV113()};
+
+function dyExitChoiceBox(message){
+  return new Promise(resolve=>{
+    const host=$('modalHost');
+    host.innerHTML=`<div class="modal-backdrop"><div class="modal"><h2>Phiếu chưa lưu hoàn tất</h2><div style="white-space:pre-line;line-height:1.5">${esc(message)}</div><div class="dy-exit-choice-note">“Vẫn thoát” sẽ bỏ các thay đổi còn nằm trong hàng đợi trên thiết bị. Những thao tác đã gửi lên máy chủ trước đó vẫn được giữ.</div><div class="row right" style="justify-content:flex-end;margin-top:18px"><button class="btn btn-red" id="dyExitWithoutSave">Vẫn thoát</button><button class="btn btn-green" id="dyExitWithSave">Lưu và thoát</button></div></div></div>`;
+    $('dyExitWithoutSave').onclick=()=>{host.innerHTML='';resolve('exit')};
+    $('dyExitWithSave').onclick=()=>{host.innerHTML='';resolve('save')};
+  });
+}
+function dyDiscardPendingBatchActions(batchId){
+  batchId=String(batchId||'');
+  state.itemQueue=(state.itemQueue||[]).filter(x=>String(x.batchId||'')!==batchId);
+  state.finishQueue=(state.finishQueue||[]).filter(x=>String(x.batchId||'')!==batchId);
+  state.exitQueue=(state.exitQueue||[]).filter(x=>String(x.batchId||'')!==batchId);
+  dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);
+  dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);
+  dyPersistExitQueue();
+  dyDetailMemoryCache.delete(batchId);
+  try{sessionStorage.removeItem(detailCacheKey(batchId))}catch(e){}
+  dyUpdateItemSaveIndicator();dyUpdateFinishPanel();
+}
+function dyReturnToBatchList(){
+  dyStopCardSpeech(true);
+  state.batch=null;state.sequence=false;state.selectedPatient='__all__';
+  state.dispensingControlsOpen=false;
+  document.body.classList.remove('dispensing-focus','dispensing-controls-open');
+  renderBatches();showPage('batches');saveBootstrapCache();
+}
+async function dyPerformSaveAndExitBatch(){
+  const b=state.batch;if(!b)return;
+  const batchId=b.batchId;
+  const localHasProgress=b.patients.some(p=>p.state==='PROGRESS'||p.items.some(i=>i.dispensed))||b.separatedState==='PROGRESS'||b.separatedItems.some(i=>i.dispensed);
+  const card=state.batches.find(x=>String(x.batchId)===String(batchId));
+  if(card&&card.state!=='DONE'&&localHasProgress)card.state='PROGRESS';
+  dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);
+  dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);
+  dyQueueExitBatch(batchId);
+  dyReturnToBatchList();
+  dyScheduleItemBatch(20);dyScheduleFinishWorker(80);dyScheduleExitWorker(180);
+  toast('Đã lưu trên thiết bị và đang đồng bộ tiến độ ở nền.','success');
+}
+requestSaveAndExitBatch=async function(){
+  const b=state.batch;if(!b)return;
+  const remaining=b.patients.filter(p=>!['DONE','AUTO_DONE'].includes(p.state)).length;
+  const ok=await confirmBox('Lưu và thoát',`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân.\nCòn ${remaining} bệnh nhân chưa hoàn thành.\nMọi thao tác chưa gửi sẽ tiếp tục được lưu ở nền.`,`Lưu và thoát`,'Tiếp tục phát');
+  if(ok)await dyPerformSaveAndExitBatch();
+};
+requestExitBatch=async function(){
+  const b=state.batch;if(!b)return;
+  const remaining=b.patients.filter(p=>!['DONE','AUTO_DONE'].includes(p.state)).length;
+  const choice=await dyExitChoiceBox(`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân.\nCòn ${remaining} bệnh nhân chưa hoàn thành.`);
+  if(choice==='save'){await dyPerformSaveAndExitBatch();return}
+  if(choice==='exit'){
+    const batchId=b.batchId;
+    dyDiscardPendingBatchActions(batchId);
+    dyReturnToBatchList();
+    refreshBatches(true);
+    toast('Đã thoát phiếu mà không chờ lưu các thay đổi còn trong hàng đợi.','success');
+  }
+};
+
+const dyForceLogoutV113Speech=forceLogout;
+forceLogout=function(){dyStopCardSpeech(true);return dyForceLogoutV113Speech()};
+window.addEventListener('beforeunload',()=>dyStopCardSpeech(true));
+/* ================= END V1.14 ================= */
 
 window.addEventListener('load',()=>{
   startDyBridge();
