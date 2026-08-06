@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.8</title>
+  <title>Phát thuốc Đông Y V1.10</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -71,28 +71,23 @@
     /* ================= V1.7: phiếu con tức thời + công cụ thu gọn ================= */
     .focus-controls-toggle{
       display:none;
-      position:fixed;
-      top:4px;
-      left:50%;
-      transform:translateX(-50%);
-      z-index:4600;
-      width:48px;
+      flex:0 0 34px;
+      width:34px;
       height:30px;
       min-height:30px;
       padding:0;
       border:1px solid #91b99a;
-      border-radius:0 0 16px 16px;
-      background:rgba(255,255,255,.97);
+      border-radius:10px;
+      background:#f4faf5;
       color:#1b5e20;
-      font-size:24px;
+      font-size:20px;
       font-weight:900;
       line-height:1;
       align-items:center;
       justify-content:center;
-      box-shadow:0 4px 14px rgba(25,72,36,.18);
+      box-shadow:0 2px 8px rgba(25,72,36,.13);
     }
-    body.dispensing-focus .focus-controls-toggle{display:flex}
-    body.dispensing-focus .detail-head{padding-top:34px!important}
+    body.dispensing-focus .focus-controls-toggle{display:inline-flex}
     body.dispensing-focus:not(.dispensing-controls-open) .detail-title-row{display:none!important}
     body.dispensing-focus.dispensing-controls-open .detail-title-row{display:flex!important}
     body.dispensing-focus.dispensing-controls-open .detail-config-row,
@@ -118,8 +113,7 @@
     }
     body.dispensing-focus .background-finish-panel{bottom:72px}
     @media(max-width:760px){
-      body.dispensing-focus .detail-head{padding-top:31px!important}
-      .focus-controls-toggle{top:2px;width:44px;height:28px;min-height:28px;font-size:22px}
+      .focus-controls-toggle{width:32px;height:30px;min-height:30px;font-size:19px;border-radius:9px}
       body.dispensing-focus .sequence-nav{gap:5px;padding:7px 4px}
       body.dispensing-focus .sequence-nav .btn{font-size:13px!important;padding:8px 6px!important}
       body.dispensing-focus #finishCurrentButton{flex:1.12 1 auto}
@@ -219,6 +213,48 @@
     }
     /* ================= END V1.8 UI ================= */
 
+
+    /* ================= Kế thừa V1.9: tăng nhãn Đang phát ở phiếu lớn và phiếu bệnh nhân ================= */
+    .batch-card .badge.PROGRESS,
+    .patient-card-head .badge.PROGRESS {
+      font-size:17px !important;
+      line-height:1.2 !important;
+      padding:8px 13px !important;
+      min-height:38px;
+      flex:0 0 auto;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+      box-shadow:0 2px 8px rgba(13,71,161,.14);
+    }
+    @media(max-width:760px){
+      .batch-card .badge.PROGRESS,
+      .patient-card-head .badge.PROGRESS {
+        font-size:17px !important;
+        padding:8px 12px !important;
+        min-height:38px;
+      }
+    }
+    /* ================= END V1.9 UI ================= */
+
+
+    /* ================= V1.10: tên vị thuốc mobile lớn hơn + nút mở công cụ cạnh tiến trình ================= */
+    .detail-progress-row{flex-wrap:nowrap}
+    .detail-progress-row .progress{min-width:64px}
+    @media(max-width:760px){
+      .patient-card .patient-body tbody td:nth-child(2){
+        font-size:24px !important;
+        line-height:1.25 !important;
+        font-weight:800;
+        overflow-wrap:anywhere;
+        word-break:break-word;
+      }
+      .detail-progress-row{gap:6px}
+      .detail-progress-row .counter{font-size:16px;line-height:1.2;flex:0 1 auto}
+      .detail-progress-row .progress{flex:1 1 70px;min-width:54px}
+    }
+    /* ================= END V1.10 UI ================= */
+
 </style>
 </head>
 <body>
@@ -254,7 +290,6 @@
     </section>
 
     <section id="page-detail" class="page hidden">
-      <button id="focusControlsToggle" class="focus-controls-toggle" type="button" onclick="toggleDispensingControls()" aria-expanded="false" title="Hiện thông tin và công cụ phía trên">⌄</button>
       <div class="detail-head">
         <div class="detail-toolbar">
           <div class="row space detail-title-row"><div><div id="detailTitle" class="batch-title"></div><div id="detailMeta" class="muted small"></div></div><span id="detailState" class="badge"></span></div>
@@ -269,7 +304,7 @@
             <input id="patientSearch" class="patient-search" placeholder="Tìm tên hoặc mã bệnh nhân..." oninput="filterPatientOptions()">
             <select id="patientSelect" class="patient-select" onchange="changePatientSelection()"></select>
           </div>
-          <div class="row" style="margin-top:8px"><span id="progressText" class="counter"></span><div class="progress grow"><span id="progressBar" style="width:0%"></span></div></div>
+          <div class="row detail-progress-row" style="margin-top:8px"><span id="progressText" class="counter"></span><div class="progress grow"><span id="progressBar" style="width:0%"></span></div><button id="focusControlsToggle" class="focus-controls-toggle" type="button" onclick="toggleDispensingControls()" aria-expanded="false" title="Hiện thông tin và công cụ phía trên">⌄</button></div>
         </div>
       </div>
       <div id="detailContent"></div>
@@ -321,7 +356,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_8';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_10';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_7';
