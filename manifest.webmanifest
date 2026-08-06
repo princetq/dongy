@@ -1,0 +1,10 @@
+{
+  "name": "Phát thuốc Đông Y",
+  "short_name": "Đông Y",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f7f3",
+  "theme_color": "#2e7d32",
+  "lang": "vi"
+}
