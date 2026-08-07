@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.15</title>
+  <title>Phát thuốc Đông Y V1.18</title>
   <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/app-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/app-180.png">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root{--green:#2e7d32;--green2:#1b5e20;--mint:#e8f5e9;--cream:#fffdf5;--gold:#c69214;--red:#c62828;--pink:#ad3150;--ink:#263238;--muted:#66766d;--line:#dce7df;--blue:#1565c0;--shadow:0 8px 24px rgba(31,55,40,.12)}
@@ -420,6 +422,41 @@
     }
     /* ================= END V1.14 UI ================= */
 
+    /* ================= V1.16: mũi tên cân giữa + đăng nhập bàn phím ================= */
+    .focus-controls-toggle{
+      position:relative!important;
+      font-size:0!important;
+      line-height:0!important;
+      overflow:hidden;
+    }
+    .focus-controls-toggle::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:0;
+      height:0;
+      border-left:6px solid transparent;
+      border-right:6px solid transparent;
+      border-top:7px solid currentColor;
+      transform:translate(-50%,-35%);
+      pointer-events:none;
+    }
+    .focus-controls-toggle.is-open::before{
+      border-top:0;
+      border-bottom:7px solid currentColor;
+      transform:translate(-50%,-65%);
+    }
+    #loginForm{margin:0;padding:0}
+    /* ================= V1.18: footer + biểu tượng PWA duy nhất ================= */
+    .login-credit{margin-top:20px;text-align:center;color:var(--green);font-size:14px;font-weight:400;opacity:.9}
+    .app-footer{position:relative;margin:20px auto 15px;width:calc(100% - 30px);max-width:1200px;padding:10px;text-align:center;color:var(--green);font-size:13px;font-weight:400;z-index:99}
+    body.dispensing-focus .app-footer{display:none!important}
+    @media(max-width:760px){.app-footer{margin-top:14px;margin-bottom:10px;padding:8px;font-size:12.5px}}
+    /* ================= END V1.18 UI ================= */
+
+    /* ================= END V1.16 UI ================= */
+
 </style>
 </head>
 <body>
@@ -429,10 +466,13 @@
     <div class="login-logo">🌿</div>
     <div class="login-title">PHÁT THUỐC ĐÔNG Y</div>
     <div class="muted" style="text-align:center">Kho Đông Y · Khoa Y học dân tộc</div>
-    <div class="field"><label>Tài khoản</label><input id="loginUsername" autocomplete="username" onfocus="prewarmBackend()" placeholder="Nhập tài khoản"></div>
-    <div class="field"><label>Mật khẩu</label><input id="loginPassword" type="password" autocomplete="current-password" onfocus="prewarmBackend()" placeholder="Nhập mật khẩu"></div>
-    <button class="btn btn-green" onclick="login()">Đăng nhập</button>
+    <form id="loginForm" onsubmit="event.preventDefault();login()">
+      <div class="field"><label>Tài khoản</label><input id="loginUsername" autocomplete="username" onfocus="prewarmBackend()" placeholder="Nhập tài khoản"></div>
+      <div class="field"><label>Mật khẩu</label><input id="loginPassword" type="password" autocomplete="current-password" onfocus="prewarmBackend()" placeholder="Nhập mật khẩu"></div>
+      <button class="btn btn-green" type="submit">Đăng nhập</button>
+    </form>
     <div id="loginError" class="danger-text small" style="margin-top:10px;text-align:center"></div>
+    <div class="login-credit">Xây dựng và phát triển bởi DS. Ngọc Anh</div>
   </div>
 </div>
 
@@ -469,7 +509,7 @@
             <input id="patientSearch" class="patient-search" placeholder="Tìm tên hoặc mã bệnh nhân..." oninput="filterPatientOptions()">
             <select id="patientSelect" class="patient-select" onchange="changePatientSelection()"></select>
           </div>
-          <div class="row detail-progress-row" style="margin-top:8px"><span id="progressText" class="counter"></span><div class="progress grow"><span id="progressBar" style="width:0%"></span></div><button id="focusControlsToggle" class="focus-controls-toggle" type="button" onclick="toggleDispensingControls()" aria-expanded="false" title="Hiện thông tin và công cụ phía trên">⌄</button></div>
+          <div class="row detail-progress-row" style="margin-top:8px"><span id="progressText" class="counter"></span><div class="progress grow"><span id="progressBar" style="width:0%"></span></div><button id="focusControlsToggle" class="focus-controls-toggle" type="button" onclick="toggleDispensingControls()" aria-expanded="false" title="Hiện thông tin và công cụ phía trên"></button></div>
         </div>
       </div>
       <div id="detailContent"></div>
@@ -503,6 +543,7 @@
 
     <section id="page-password" class="page hidden"><div class="panel" style="max-width:560px;margin:auto"><h2>Đổi mật khẩu</h2><label>Mật khẩu hiện tại</label><input id="oldPassword" type="password"><br><br><label>Mật khẩu mới</label><input id="newPassword" type="password"><br><br><label>Nhập lại mật khẩu mới</label><input id="confirmPassword" type="password"><br><br><button class="btn btn-green" onclick="changePassword()">Đổi mật khẩu</button></div></section>
   </main>
+  <footer class="app-footer">Xây dựng và phát triển bởi DS. Ngọc Anh</footer>
 </div>
 
 <div id="itemSaveIndicator" class="item-save-indicator hidden" aria-live="polite"></div>
@@ -521,7 +562,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_12';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_18';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_7';
@@ -713,6 +754,7 @@ function applyBootstrapPayload(res,{cached=false}={}){
   $('loginView').classList.add('hidden');
   $('appView').classList.remove('hidden');
   $('userPill').textContent=`${state.user.displayName} · ${state.user.role==='admin'?'Admin':'Người phát'}`;
+  $('userPill').title=state.user.role==='admin'?'Phiên Admin duy trì đến khi bạn chọn Đăng xuất.':(state.sessionExpiresAt?`Phiên Người phát có hiệu lực đến ${new Date(state.sessionExpiresAt).toLocaleString('vi-VN')}.`:'Phiên Người phát được yêu cầu đăng nhập lại vào mỗi thứ Hai.');
   $('headerSubtitle').textContent=`${state.settings.warehouseName} · ${state.settings.departmentName}`;
   document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',state.user.role!=='admin'));
   renderBatches();
@@ -1264,8 +1306,10 @@ function dySyncFocusControlsToggle(){
   if(!btn)return;
   const focus=document.body.classList.contains('dispensing-focus');
   const opened=focus&&document.body.classList.contains('dispensing-controls-open');
-  btn.textContent=opened?'⌃':'⌄';
+  btn.textContent='';
+  btn.classList.toggle('is-open',opened);
   btn.setAttribute('aria-expanded',opened?'true':'false');
+  btn.setAttribute('aria-label',opened?'Ẩn thông tin và công cụ phía trên':'Hiện thông tin và công cụ phía trên');
   btn.title=opened?'Ẩn thông tin và công cụ phía trên':'Hiện thông tin và công cụ phía trên';
 }
 function toggleDispensingControls(force){
@@ -1394,7 +1438,7 @@ function dySpeakHerbButton(button){
     window.speechSynthesis.cancel();
     const utterance=new SpeechSynthesisUtterance(text);
     utterance.lang='vi-VN';
-    utterance.rate=.9;
+    utterance.rate=.94;
     utterance.pitch=1;
     utterance.volume=1;
     const voices=window.speechSynthesis.getVoices()||[];
@@ -1597,10 +1641,37 @@ function dySpeechPhrase(herb,qty,unit){
   const cleanHerb=dyCleanHerbName(herb)||String(herb||'').trim();
   return [cleanHerb,dySpeechQuantity(qty),dySpeechUnit(unit)].filter(Boolean).join(' ')+'.';
 }
+let dyVietnameseVoiceCache=null;
+function dyVietnameseVoiceScore(v){
+  const lang=String(v&&v.lang||'').toLowerCase();
+  if(!(lang==='vi-vn'||lang.startsWith('vi-')||lang==='vi'))return -1;
+  const name=String(v&&v.name||'').toLowerCase();
+  let score=0;
+  if(lang==='vi-vn')score+=500;else score+=350;
+  if(/natural|neural/.test(name))score+=300;
+  if(/online/.test(name))score+=140;
+  if(/microsoft/.test(name))score+=120;
+  if(/google/.test(name))score+=110;
+  if(/apple|siri/.test(name))score+=95;
+  if(/hoaimy|namminh|tiếng việt|tieng viet|vietnamese/.test(name))score+=80;
+  if(v&&v.localService)score+=20;
+  return score;
+}
 function dyVietnameseVoice(){
-  const voices=window.speechSynthesis&&window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];
-  return voices.find(v=>String(v.lang||'').toLowerCase()==='vi-vn')||
-    voices.find(v=>String(v.lang||'').toLowerCase().startsWith('vi'))||null;
+  if(!window.speechSynthesis||!window.speechSynthesis.getVoices)return null;
+  const voices=window.speechSynthesis.getVoices()||[];
+  const vi=voices.map(v=>({v,score:dyVietnameseVoiceScore(v)})).filter(x=>x.score>=0).sort((a,b)=>b.score-a.score);
+  dyVietnameseVoiceCache=vi.length?vi[0].v:null;
+  return dyVietnameseVoiceCache;
+}
+function dyPrimeVietnameseVoice(){
+  try{dyVietnameseVoice()}catch(e){}
+}
+if('speechSynthesis' in window){
+  try{window.speechSynthesis.addEventListener('voiceschanged',()=>{dyVietnameseVoiceCache=null;dyPrimeVietnameseVoice()})}catch(e){}
+  setTimeout(dyPrimeVietnameseVoice,0);
+  setTimeout(dyPrimeVietnameseVoice,400);
+  setTimeout(dyPrimeVietnameseVoice,1200);
 }
 function dyStopCardSpeech(silent=false){
   state.cardSpeechToken=Number(state.cardSpeechToken||0)+1;
@@ -1652,10 +1723,16 @@ function dyRunCardSpeechCycle(kind,id,token){
     try{
       const utterance=new SpeechSynthesisUtterance(dySpeechPhrase(item.herb,item.qty,item.unit));
       utterance.lang='vi-VN';
-      utterance.rate=.9;
+      utterance.rate=.94;
       utterance.pitch=1;
       utterance.volume=1;
-      const voice=dyVietnameseVoice();if(voice)utterance.voice=voice;
+      const voice=dyVietnameseVoice();
+      if(!voice){
+        dyStopCardSpeech(true);
+        toast('Thiết bị chưa có giọng đọc tiếng Việt. Hãy cài giọng tiếng Việt trong cài đặt chuyển văn bản thành giọng nói rồi mở lại ứng dụng.','error');
+        return;
+      }
+      utterance.voice=voice;
       utterance.onend=()=>setTimeout(speakNext,220);
       utterance.onerror=()=>setTimeout(speakNext,350);
       window.speechSynthesis.speak(utterance);
@@ -1694,8 +1771,14 @@ dySpeakHerbButton=function(button){
   try{
     window.speechSynthesis.cancel();
     const utterance=new SpeechSynthesisUtterance(dySpeechPhrase(button.dataset.herb||'',button.dataset.qty||'',button.dataset.unit||''));
-    utterance.lang='vi-VN';utterance.rate=.9;utterance.pitch=1;utterance.volume=1;
-    const voice=dyVietnameseVoice();if(voice)utterance.voice=voice;
+    utterance.lang='vi-VN';utterance.rate=.94;utterance.pitch=1;utterance.volume=1;
+    const voice=dyVietnameseVoice();
+    if(!voice){
+      button.classList.remove('speaking');
+      toast('Thiết bị chưa có giọng đọc tiếng Việt. Hãy cài giọng tiếng Việt trong cài đặt chuyển văn bản thành giọng nói rồi mở lại ứng dụng.','error');
+      return;
+    }
+    utterance.voice=voice;
     button.classList.add('speaking');
     utterance.onend=()=>button.classList.remove('speaking');
     utterance.onerror=()=>button.classList.remove('speaking');
