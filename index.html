@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.18</title>
+  <title>Phát thuốc Đông Y V1.21</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/app-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./icons/app-180.png">
@@ -457,6 +457,18 @@
 
     /* ================= END V1.16 UI ================= */
 
+
+    /* ================= V1.19: thoát riêng / lưu và thoát hoạt động chắc chắn ================= */
+    #exitBatchTopButton,#exitBatchSequenceButton{
+      pointer-events:auto!important;
+      touch-action:manipulation;
+      cursor:pointer;
+      position:relative;
+    }
+    body.dispensing-focus #exitBatchSequenceButton{z-index:3}
+    .dy-v119-exit-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#fff3e0;border:1px solid #ffcc80;color:#7a4300;font-size:14px;line-height:1.45}
+    /* ================= END V1.19 UI ================= */
+
 </style>
 </head>
 <body>
@@ -503,7 +515,7 @@
             <select id="dayCountSelect" class="day-select" onchange="changeDayCount()"></select>
             <button id="herbButton" class="btn btn-gold" onclick="openHerbModal()">🌿 Vị thuốc</button>
             <button id="startButton" class="btn btn-green" onclick="startSequential()">▶ Bắt đầu phát</button>
-            <button id="exitBatchTopButton" class="btn btn-outline right" onclick="requestExitBatch()">↩ Thoát phiếu</button>
+            <button type="button" id="exitBatchTopButton" class="btn btn-outline right" onclick="return requestExitBatch(event)">↩ Thoát phiếu</button>
           </div>
           <div class="row patient-picker-row" style="margin-top:9px">
             <input id="patientSearch" class="patient-search" placeholder="Tìm tên hoặc mã bệnh nhân..." oninput="filterPatientOptions()">
@@ -517,7 +529,7 @@
         <button class="btn btn-light" onclick="previousPatient()">← Trước</button>
         <button class="btn btn-blue" onclick="nextPatient()">Tiếp →</button>
         <button id="finishCurrentButton" class="btn btn-green" onclick="finishCurrentVoucher()" title="Chốt bệnh nhân hiện tại">✓ Chốt BN</button>
-        <button id="exitBatchSequenceButton" class="btn btn-red" onclick="requestSaveAndExitBatch()" title="Lưu tiến độ và trở về danh sách phiếu">💾 Lưu và thoát</button>
+        <button type="button" id="exitBatchSequenceButton" class="btn btn-red" onclick="return requestSaveAndExitBatch(event)" title="Lưu tiến độ và trở về danh sách phiếu">💾 Lưu và thoát</button>
       </div>
     </section>
 
@@ -562,7 +574,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_18';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_21';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_7';
@@ -944,9 +956,26 @@ function renderSeparatedCard(interactive){const b=state.batch;const rows=b.separ
 function openPatient(id){state.selectedPatient=id;state.sequence=true;const p=state.batch.patients.find(x=>x.voucherId===id);state.currentIndex=Math.max(0,state.batch.patients.indexOf(p));$('patientSelect').value=id;renderDetail();gas('startPatient',{voucherId:id}).then(r=>{state.batch=r.batch;renderDetail()}).catch(e=>toast(e.message,'error'))}
 function openSeparated(){state.selectedPatient='__separated__';state.sequence=true;$('patientSelect').value='__separated__';renderDetail();gas('startSeparated',{batchId:state.batch.batchId}).then(r=>{state.batch=r.batch;renderDetail()}).catch(e=>toast(e.message,'error'))}
 async function changeDayCount(){const n=Number($('dayCountSelect').value);const ok=await confirmBox('Áp dụng số ngày chung',`Mọi bệnh nhân và mọi vị thuốc trong đợt sẽ cùng áp dụng ${n} ngày.\nSố lượng của tất cả vị thuốc sẽ được tính lại từ số lượng gốc.`,`Áp dụng ${n} ngày`);if(!ok){$('dayCountSelect').value=state.batch.dayCount;return}try{const r=await gas('setDayCount',{batchId:state.batch.batchId,dayCount:n});state.batch=r.batch;renderDetail();toast(`Đã áp dụng ${n} ngày cho toàn bộ đợt`,'success')}catch(e){$('dayCountSelect').value=state.batch.dayCount;toast(e.message,'error')}}
-function openHerbModal(){const selected=new Set();state.batch.patients.forEach(p=>p.items.forEach(i=>{if(i.isSeparated)selected.add(norm(i.herbName))}));const totals={};state.batch.patients.forEach(p=>p.items.forEach(i=>{const k=norm(i.herbName);if(!totals[k])totals[k]={name:i.herbName,total:0};totals[k].total+=i.baseQty}));const herbs=Object.values(totals).sort((a,b)=>a.name.localeCompare(b.name,'vi'));$('modalHost').innerHTML=`<div class="modal-backdrop"><div class="modal"><div class="row space"><div><h2 style="margin-bottom:4px">Tách vị thuốc ra phiếu riêng</h2><div class="muted">Tổng được cộng từ mọi bệnh nhân và cùng nhân với ${state.batch.dayCount} ngày.</div></div><button class="btn btn-light" onclick="closeModal()">✕</button></div><input id="herbSearch" placeholder="Tìm tên vị thuốc..." oninput="filterHerbModal()" style="margin:12px 0"><div class="row"><button class="btn btn-light btn-sm" onclick="setAllHerbs(true)">Chọn tất cả</button><button class="btn btn-light btn-sm" onclick="setAllHerbs(false)">Bỏ chọn</button></div><div id="herbGrid" class="herb-grid" style="margin-top:10px">${herbs.map(h=>`<label class="herb-option" data-search="${esc(norm(h.name))}"><input class="herb-check" type="checkbox" value="${esc(h.name)}" ${selected.has(norm(h.name))?'checked':''}><span>${esc(h.name)}<div class="muted small">Tổng gốc: ${fmtQty(h.total)} g · Thực phát: ${fmtQty(h.total*state.batch.dayCount)} g</div></span></label>`).join('')}</div><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn btn-light" onclick="closeModal()">Hủy</button><button class="btn btn-green" onclick="saveSeparatedHerbs()">Tạo/Cập nhật phiếu tách</button></div></div></div>`}
+function openHerbModal(){const selected=new Set();state.batch.patients.forEach(p=>p.items.forEach(i=>{if(i.isSeparated)selected.add(norm(i.herbName))}));const totals={};state.batch.patients.forEach(p=>p.items.forEach(i=>{const k=norm(i.herbName);if(!totals[k])totals[k]={name:i.herbName,total:0};totals[k].total+=i.baseQty}));const herbs=Object.values(totals).sort((a,b)=>a.name.localeCompare(b.name,'vi'));$('modalHost').innerHTML=`<div class="modal-backdrop"><div class="modal"><div class="row space"><div><h2 style="margin-bottom:4px">Tách vị thuốc ra phiếu riêng</h2><div class="muted">Tổng được cộng từ mọi bệnh nhân và cùng nhân với ${state.batch.dayCount} ngày.</div></div><button class="btn btn-light" onclick="closeModal()">✕</button></div><input id="herbSearch" placeholder="Tìm tên vị thuốc..." oninput="filterHerbModal()" style="margin:12px 0"><div class="row"><button class="btn btn-light btn-sm" onclick="setAllHerbs(true)">Chọn tất cả</button><button class="btn btn-light btn-sm" onclick="setAllHerbs(false)">Bỏ chọn</button></div><div id="herbGrid" class="herb-grid" style="margin-top:10px">${herbs.map(h=>`<label class="herb-option" data-search="${esc(norm(h.name))}"><input class="herb-check" type="checkbox" value="${esc(h.name)}" ${selected.has(norm(h.name))?'checked':''}><span>${esc(h.name)}<div class="muted small">Tổng gốc: ${fmtQty(h.total)} g · Thực phát: ${fmtQty(h.total*state.batch.dayCount)} g</div></span></label>`).join('')}</div><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn btn-light" onclick="closeModal()">Hủy</button><button id="saveSeparatedButton" type="button" class="btn btn-green" onclick="saveSeparatedHerbs()">Tạo/Cập nhật phiếu tách</button></div></div></div>`}
 function closeModal(){$('modalHost').innerHTML=''}function filterHerbModal(){const q=norm($('herbSearch').value);document.querySelectorAll('.herb-option').forEach(x=>x.classList.toggle('hidden',q&&!x.dataset.search.includes(q)))}function setAllHerbs(v){document.querySelectorAll('.herb-check').forEach(x=>x.checked=v)}
-async function saveSeparatedHerbs(){const names=[...document.querySelectorAll('.herb-check:checked')].map(x=>x.value);const ok=await confirmBox('Xác nhận tách vị thuốc',names.length?`Các vị đã chọn sẽ được cộng tổng vào một phiếu riêng và bị loại khỏi tất cả phiếu bệnh nhân.\nSố ngày chung hiện tại: ${state.batch.dayCount}.`:'Bỏ toàn bộ phiếu vị thuốc tách riêng?');if(!ok)return;try{const r=await gas('saveSeparatedHerbs',{batchId:state.batch.batchId,herbNames:names});state.batch=r.batch;closeModal();renderDetail();toast('Đã cập nhật phiếu vị thuốc tách riêng','success')}catch(e){toast(e.message,'error')}}
+async function saveSeparatedHerbs(){
+  const names=[...document.querySelectorAll('.herb-check:checked')].map(x=>x.value);
+  const ok=await confirmBox('Xác nhận tách vị thuốc',names.length?`Các vị đã chọn sẽ được cộng tổng vào một phiếu riêng và bị loại khỏi tất cả phiếu bệnh nhân.\nSố ngày chung hiện tại: ${state.batch.dayCount}.`:'Bỏ toàn bộ phiếu vị thuốc tách riêng?');
+  if(!ok)return;
+  const btn=$('saveSeparatedButton');
+  if(btn){btn.disabled=true;btn.textContent='Đang tạo phiếu tách...'}
+  try{
+    const r=await gas('saveSeparatedHerbs',{batchId:state.batch.batchId,herbNames:names},{message:'Đang tạo phiếu vị thuốc...',timeoutMs:120000});
+    state.batch=r.batch;
+    writeBatchDetailCache(state.batch);
+    closeModal();
+    renderDetail();
+    toast(names.length?'Đã tạo/cập nhật phiếu vị thuốc tách riêng':'Đã bỏ phiếu vị thuốc tách riêng','success')
+  }catch(e){
+    if(btn&&document.body.contains(btn)){btn.disabled=false;btn.textContent='Tạo/Cập nhật phiếu tách'}
+    toast('Không tạo được phiếu tách: '+e.message,'error')
+  }
+}
 async function startSequential(){const b=state.batch;if(b.separatedItems.length&&b.separatedState!=='DONE'){openSeparated();return}const idx=b.patients.findIndex(p=>!['DONE','AUTO_DONE'].includes(p.state));if(idx<0){await attemptFinishBatch();return}state.currentIndex=idx;openPatient(b.patients[idx].voucherId)}
 function sequentialCandidates(){return state.batch.patients.filter(p=>p.state!=='AUTO_DONE')}
 function previousPatient(){const arr=sequentialCandidates();if(state.selectedPatient==='__separated__')return;let idx=arr.findIndex(p=>p.voucherId===state.selectedPatient);idx=Math.max(0,idx-1);if(arr[idx])openPatient(arr[idx].voucherId)}
@@ -963,8 +992,10 @@ function dyClearBatchLocalState(batchId, removeCard) {
 
   state.itemQueue = (state.itemQueue || []).filter(x => String(x.batchId || '') !== batchId);
   state.finishQueue = (state.finishQueue || []).filter(x => String(x.batchId || '') !== batchId);
+  state.exitQueue = (state.exitQueue || []).filter(x => String(x.batchId || '') !== batchId);
   dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'), state.itemQueue);
   dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'), state.finishQueue);
+  if (typeof dyPersistExitQueue === 'function') dyPersistExitQueue();
 
   dyDetailMemoryCache.delete(batchId);
   try { sessionStorage.removeItem(detailCacheKey(batchId)); } catch (e) {}
@@ -993,9 +1024,13 @@ async function resetBatch(id) {
   );
   if (!ok) return;
 
+  // Hủy các thao tác tiến độ cũ còn nằm trong hàng đợi cục bộ để chúng không
+  // chạy lại sau khi server đã đặt lại. Chỉ hủy tiến độ, không đổi cấu hình phiếu.
+  if (typeof dyDiscardPendingBatchActions === 'function') dyDiscardPendingBatchActions(id);
+
   try {
     const r = await gas('resetBatch', { batchId: id }, {
-      message: 'Đang đặt lại phiếu...',
+      message: 'Đang đặt lại tiến độ...',
       timeoutMs: 120000
     });
     dyClearBatchLocalState(id, false);
@@ -1003,7 +1038,7 @@ async function resetBatch(id) {
     state.batches = r.batches || state.batches || [];
     renderBatches();
     saveBootstrapCache();
-    toast('Đã đặt lại toàn bộ tiến độ của phiếu', 'success');
+    toast('Đã đặt lại tiến độ; giữ nguyên số ngày và phiếu tách', 'success');
   } catch (e) {
     toast('Không đặt lại được phiếu: ' + e.message, 'error');
   }
@@ -1974,6 +2009,75 @@ dyProcessItemBatch=async function(){
     dyScheduleFinishWorker(180);
   }
 };
+
+
+/* ================= V1.19: TÁCH RIÊNG THOÁT / LƯU VÀ THOÁT ================= */
+function dyExitWithoutSaveBoxV119(message){
+  return new Promise(resolve=>{
+    const host=$('modalHost');
+    host.innerHTML=`<div class="modal-backdrop"><div class="modal"><h2>Thoát phiếu?</h2><div style="white-space:pre-line;line-height:1.5">${esc(message)}</div><div class="dy-v119-exit-note">Thoát sẽ không yêu cầu lưu thêm. Những thay đổi còn nằm trong hàng đợi trên thiết bị sẽ bị bỏ; dữ liệu đã gửi thành công lên máy chủ trước đó vẫn được giữ.</div><div class="row right" style="justify-content:flex-end;margin-top:18px"><button type="button" class="btn btn-light" id="dyV119Continue">Tiếp tục phát</button><button type="button" class="btn btn-red" id="dyV119Exit">Thoát</button></div></div></div>`;
+    const finish=value=>{host.innerHTML='';resolve(value)};
+    $('dyV119Continue').onclick=()=>finish(false);
+    $('dyV119Exit').onclick=()=>finish(true);
+  });
+}
+
+requestExitBatch=async function(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  const b=state.batch;
+  if(!b)return false;
+  dyStopCardSpeech(true);
+  const remaining=b.patients.filter(p=>!['DONE','AUTO_DONE'].includes(p.state)).length;
+  const shouldExit=await dyExitWithoutSaveBoxV119(`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân.\nCòn ${remaining} bệnh nhân chưa hoàn thành.`);
+  if(!shouldExit)return false;
+  const batchId=b.batchId;
+  dyDiscardPendingBatchActions(batchId);
+  dyReturnToBatchList();
+  refreshBatches(true);
+  toast('Đã thoát phiếu. Không yêu cầu lưu thêm.','success');
+  return false;
+};
+
+requestSaveAndExitBatch=async function(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  const btn=$('exitBatchSequenceButton');
+  if(!state.batch)return false;
+  if(btn&&btn.dataset.busy==='1')return false;
+  if(btn){btn.dataset.busy='1';btn.disabled=true;}
+  try{
+    dyStopCardSpeech(true);
+    await dyPerformSaveAndExitBatch();
+  }catch(e){
+    toast((e&&e.message)||'Không thực hiện được Lưu và thoát.','error');
+  }finally{
+    if(btn){btn.dataset.busy='0';btn.disabled=false;}
+  }
+  return false;
+};
+
+function dyBindExitButtonsV119(){
+  const top=$('exitBatchTopButton');
+  if(top){
+    top.type='button';
+    top.onclick=ev=>requestExitBatch(ev);
+  }
+  const save=$('exitBatchSequenceButton');
+  if(save){
+    save.type='button';
+    save.onclick=ev=>requestSaveAndExitBatch(ev);
+    save.style.pointerEvents='auto';
+  }
+}
+
+const dyRenderDetailV119=renderDetail;
+renderDetail=function(){
+  const result=dyRenderDetailV119.apply(this,arguments);
+  dyBindExitButtonsV119();
+  return result;
+};
+window.addEventListener('load',()=>setTimeout(dyBindExitButtonsV119,0));
+/* ================= END V1.19 ================= */
+
 /* ================= END V1.15 ================= */
 
 /* ================= END V1.14 ================= */
