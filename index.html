@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.21</title>
+  <title>Phát thuốc Đông Y V1.22</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/app-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./icons/app-180.png">
@@ -574,7 +574,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_21';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_22';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_7';
@@ -2076,6 +2076,91 @@ renderDetail=function(){
   return result;
 };
 window.addEventListener('load',()=>setTimeout(dyBindExitButtonsV119,0));
+
+
+/* ================= V1.22 AUTO CHỐT BN KHI ĐÁNH DẤU VỊ CUỐI ================= */
+/*
+ * Khi vị thuốc cuối cùng của phiếu bệnh nhân được đánh dấu đã phát:
+ * 1) thao tác vị thuốc đã nằm trong hàng đợi bền vững trên thiết bị;
+ * 2) đưa lệnh chốt bệnh nhân vào hàng đợi nền;
+ * 3) chuyển ngay sang bệnh nhân kế tiếp, không chờ Apps Script.
+ * Finish worker hiện có luôn chờ itemQueue của đúng voucher rỗng trước khi gọi finishPatient,
+ * nên chốt nền không thể chạy trước thao tác vị thuốc cuối cùng.
+ */
+function dyNextPatientAfterV122(voucherId){
+  const b=state.batch;if(!b)return null;
+  const rows=b.patients||[];
+  const current=rows.findIndex(p=>String(p.voucherId)===String(voucherId));
+  const eligible=p=>p&&!['DONE','AUTO_DONE'].includes(p.state)&&!p._finishPending&&!dyHasFinishJob('patient',p.voucherId);
+  if(current>=0){
+    for(let i=current+1;i<rows.length;i++)if(eligible(rows[i]))return rows[i];
+    // Nếu trước đó người dùng đã bỏ qua một bệnh nhân, quay lại bệnh nhân chưa hoàn thành đầu tiên.
+    for(let i=0;i<current;i++)if(eligible(rows[i]))return rows[i];
+  }
+  return rows.find(eligible)||null;
+}
+function dyCancelPendingAutoFinishV122(voucherId){
+  const before=(state.finishQueue||[]).length;
+  state.finishQueue=(state.finishQueue||[]).filter(job=>!(job.kind==='patient'&&String(job.voucherId)===String(voucherId)&&job.auto===true&&job.status!=='running'));
+  if(state.finishQueue.length!==before){
+    const p=state.batch&&(state.batch.patients||[]).find(x=>String(x.voucherId)===String(voucherId));
+    if(p)p._finishPending=false;
+    dySaveJson(dyQueueKey('DY_FINISH_QUEUE_V15'),state.finishQueue);
+    dyUpdateFinishPanel();
+  }
+}
+function dyAutoFinishPatientIfCompleteV122(voucherId){
+  const b=state.batch;if(!b||!state.sequence)return false;
+  if(String(state.selectedPatient)!==String(voucherId))return false;
+  const p=(b.patients||[]).find(x=>String(x.voucherId)===String(voucherId));
+  if(!p||['DONE','AUTO_DONE'].includes(p.state)||p._finishPending||dyHasFinishJob('patient',p.voucherId))return false;
+  const active=(p.items||[]).filter(i=>!i.isSeparated);
+  if(!active.length||!active.every(i=>i.dispensed))return false;
+
+  dyEnqueueFinish({kind:'patient',batchId:b.batchId,voucherId:p.voucherId,patientName:p.patientName,auto:true});
+  p._finishPending=true;
+  writeBatchDetailCache(b);
+
+  const next=dyNextPatientAfterV122(p.voucherId);
+  if(next){
+    showQuickStatus(`Đã đủ vị ${p.patientName}. Đang chốt nền và chuyển bệnh nhân tiếp theo...`,1100);
+    openPatient(next.voucherId);
+    return true;
+  }
+
+  const separatedReady=!b.separatedItems.length||b.separatedState==='DONE'||dyHasFinishJob('separated',b.batchId);
+  if(dyAllPatientsDoneOrQueued()&&separatedReady){
+    dyEnqueueFinish({kind:'batch',batchId:b.batchId,auto:true});
+    showQuickStatus('Đã phát hết bệnh nhân. Đang chốt đợt phát ở nền...',1300);
+    dyReturnToBatchList();
+    dyScheduleItemBatch(20);dyScheduleFinishWorker(100);
+    return true;
+  }
+
+  // Trường hợp bất thường: còn phiếu tách chưa hoàn thành thì đưa người dùng về phiếu tách.
+  if(b.separatedItems.length&&!separatedReady){
+    showQuickStatus('Đã hết phiếu bệnh nhân. Còn phiếu vị thuốc tách cần hoàn thành.',1400);
+    openSeparated();
+    return true;
+  }
+  return true;
+}
+
+const dyQueueItemActionV121=dyQueueItemAction;
+dyQueueItemAction=function(kind,id,dispensed){
+  const voucherId=kind==='patient'?dyVoucherForItem(String(id)):'';
+  dyQueueItemActionV121(kind,id,dispensed);
+  if(kind!=='patient'||!voucherId)return;
+  if(dispensed===true){
+    // Chạy sau khi trạng thái local của vị cuối đã được cập nhật và hàng đợi item đã được lưu.
+    dyAutoFinishPatientIfCompleteV122(voucherId);
+  }else{
+    // Nếu người dùng hoàn tác trước khi job tự chốt bắt đầu chạy, hủy job tự chốt tương ứng.
+    dyCancelPendingAutoFinishV122(voucherId);
+  }
+};
+/* ================= END V1.22 ================= */
+
 /* ================= END V1.19 ================= */
 
 /* ================= END V1.15 ================= */
