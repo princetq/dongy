@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.14</title>
+  <title>Phát thuốc Đông Y V1.15</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -1794,6 +1794,105 @@ requestExitBatch=async function(){
 const dyForceLogoutV113Speech=forceLogout;
 forceLogout=function(){dyStopCardSpeech(true);return dyForceLogoutV113Speech()};
 window.addEventListener('beforeunload',()=>dyStopCardSpeech(true));
+
+
+/* ================= V1.15 INSTANT LOCAL NAVIGATION / RESILIENT BLOCK SAVE ================= */
+/*
+ * Chuyển phiếu con chỉ là thao tác giao diện. Không gọi startPatient/startSeparated,
+ * vì trạng thái PROGRESS sẽ được backend ghi cùng block vị thuốc đầu tiên.
+ */
+openPatient=function(id){
+  dyStopCardSpeech(true);
+  if(!state.batch)return;
+  const p=state.batch.patients.find(x=>String(x.voucherId)===String(id));
+  if(!p)return;
+  state.selectedPatient=p.voucherId;
+  state.sequence=true;
+  state.currentIndex=Math.max(0,state.batch.patients.indexOf(p));
+  const select=$('patientSelect');if(select)select.value=p.voucherId;
+  renderDetail();
+};
+
+openSeparated=function(){
+  dyStopCardSpeech(true);
+  if(!state.batch)return;
+  state.selectedPatient='__separated__';
+  state.sequence=true;
+  const select=$('patientSelect');if(select)select.value='__separated__';
+  renderDetail();
+};
+
+/* Gom thao tác theo đúng một phiếu lớn trong mỗi request, chờ lâu hơn ở nền và
+ * tự thử lại. Không hiện lỗi timeout làm gián đoạn người phát. */
+dyScheduleItemBatch=function(delay=320){
+  if(state.itemBatchRunning||!state.itemQueue.length||!state.token)return;
+  clearTimeout(state.itemBatchTimer);
+  state.itemBatchTimer=setTimeout(dyProcessItemBatch,Math.max(40,Number(delay)||320));
+};
+
+dyProcessItemBatch=async function(){
+  if(state.itemBatchRunning||!state.itemQueue.length||!state.token)return;
+  clearTimeout(state.itemBatchRetryTimer);
+  state.itemBatchRetryTimer=null;
+  state.itemBatchRunning=true;
+  dyUpdateItemSaveIndicator();
+
+  const firstBatchId=String(state.itemQueue[0]&&state.itemQueue[0].batchId||'');
+  const sent=state.itemQueue
+    .filter(x=>String(x.batchId||'')===firstBatchId)
+    .slice(0,40)
+    .map(x=>({...x}));
+
+  if(!sent.length){
+    state.itemBatchRunning=false;
+    dyUpdateItemSaveIndicator();
+    if(state.itemQueue.length)dyScheduleItemBatch(400);
+    return;
+  }
+
+  try{
+    const r=await gas('saveItemActionsBatch',{actions:sent},{silent:true,timeoutMs:60000});
+    (r.results||[]).forEach(result=>{
+      const key=result.kind+':'+result.id;
+      const current=state.itemQueue.find(x=>dyActionKey(x)===key);
+      const sentAction=sent.find(x=>x.clientActionId===result.clientActionId)||sent.find(x=>dyActionKey(x)===key);
+      if(current&&sentAction&&current.clientActionId===sentAction.clientActionId){
+        state.itemQueue=state.itemQueue.filter(x=>x.clientActionId!==current.clientActionId);
+      }else if(current&&result.version){
+        current.expectedVersion=Number(result.version);
+      }
+      const local=dyFindLocalItem(result.kind,result.id);
+      const newer=state.itemQueue.find(x=>dyActionKey(x)===key);
+      if(local&&(!newer||newer.clientActionId===(sentAction&&sentAction.clientActionId))){
+        local.dispensed=!!result.dispensed;
+        local.version=Number(result.version||local.version||1);
+        dyApplyItemVisual(result.kind,result.id,local.dispensed);
+      }
+      if(result.conflict)toast(result.message||'Vị thuốc vừa được thiết bị khác cập nhật.','error');
+      if(result.ok===false)toast(result.message||'Không lưu được vị thuốc.','error');
+    });
+    dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);
+  }catch(e){
+    sent.forEach(a=>{
+      const cur=state.itemQueue.find(x=>x.clientActionId===a.clientActionId);
+      if(cur){cur.attempts=Number(cur.attempts||0)+1;cur.lastError=String(e&&e.message||e||'');}
+    });
+    dySaveJson(dyQueueKey('DY_ITEM_QUEUE_V15'),state.itemQueue);
+    const attempts=Math.max(1,...sent.map(a=>{
+      const cur=state.itemQueue.find(x=>x.clientActionId===a.clientActionId);
+      return Number(cur&&cur.attempts||1);
+    }));
+    clearTimeout(state.itemBatchRetryTimer);
+    state.itemBatchRetryTimer=setTimeout(()=>{state.itemBatchRetryTimer=null;dyProcessItemBatch()},Math.min(15000,1200+attempts*1500));
+  }finally{
+    state.itemBatchRunning=false;
+    dyUpdateItemSaveIndicator();
+    if(state.itemQueue.length&&!state.itemBatchRetryTimer)dyScheduleItemBatch(350);
+    dyScheduleFinishWorker(180);
+  }
+};
+/* ================= END V1.15 ================= */
+
 /* ================= END V1.14 ================= */
 
 window.addEventListener('load',()=>{
