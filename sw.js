@@ -1,4 +1,4 @@
-const CACHE_NAME='phat-thuoc-dong-y-v1-29-github';
+const CACHE_NAME='phat-thuoc-dong-y-v1-31-github';
 const APP_SHELL=[
   './',
   './index.html',
@@ -13,7 +13,7 @@ self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME&&k!=='dy-auth-vault-persistent-v1').map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
