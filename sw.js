@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'phat-thuoc-dong-y-v1-36-clean';
+const CACHE_NAME = 'phat-thuoc-dong-y-v1-37-clean';
 const APP_SHELL = [
   './',
   './index.html',
