@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.28</title>
+  <title>Phát thuốc Đông Y V1.31</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/app-v129-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./icons/app-v129-180.png">
@@ -518,6 +518,22 @@
     .patient-picker-menu.dy-open-upward{top:auto;bottom:calc(100% + 6px)}
     .patient-option-list{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
     /* ================= END V1.27 UI ================= */
+
+    /* ================= V1.31: EXIT DỨT ĐIỂM + PATIENT PICKER FIXED VIEWPORT ================= */
+    body.dy-v131-picker-open .detail-head{z-index:9000!important}
+    body.dy-v131-picker-open .patient-picker-combo{z-index:9001!important}
+    .patient-picker-menu.dy-v131-fixed{
+      position:fixed!important;
+      z-index:9100!important;
+      top:auto;right:auto;bottom:auto;left:auto;
+      max-height:none!important;
+      overflow:hidden!important;
+      margin:0!important;
+      transform:none!important;
+    }
+    .patient-picker-menu.dy-v131-fixed .patient-picker-search-box{position:sticky;top:0;z-index:3}
+    .patient-picker-menu.dy-v131-fixed .patient-option-list{overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+    /* ================= END V1.31 UI ================= */
 </style>
 </head>
 <body>
@@ -564,7 +580,7 @@
             <select id="dayCountSelect" class="day-select" onchange="changeDayCount()"></select>
             <button id="herbButton" class="btn btn-gold" onclick="openHerbModal()">🌿 Vị thuốc</button>
             <button id="startButton" class="btn btn-green" onclick="startSequential()">▶ Bắt đầu phát</button>
-            <button type="button" id="exitBatchTopButton" class="btn btn-outline right" onclick="return requestExitBatch(event)">↩ Thoát phiếu</button>
+            <button type="button" id="exitBatchTopButton" class="btn btn-outline right" onclick="return dyExitBatchWithoutSaveV131(event)">↩ Thoát phiếu</button>
           </div>
           <div class="row patient-picker-row" style="margin-top:9px">
             <div id="patientPickerCombo" class="patient-picker-combo">
@@ -636,7 +652,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_29';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_30';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_PERSISTENT_V1';
@@ -645,6 +661,8 @@ const DY_BOOTSTRAP_CACHE_KEY='DY_BOOTSTRAP_PERSISTENT_V1';
 const DY_BOOTSTRAP_LEGACY_KEYS=['DY_BOOTSTRAP_CACHE_V1_24','DY_BOOTSTRAP_CACHE_V1_7'];
 const DY_AUTH_DB_NAME='DY_AUTH_DB_V1';
 const DY_AUTH_DB_STORE='kv';
+const DY_AUTH_VAULT_CACHE='dy-auth-vault-persistent-v1';
+const DY_AUTH_VAULT_URL=new URL('./__dy_auth_vault__',location.href).href;
 const DY_DETAIL_CACHE_PREFIX='DY_DETAIL_V1_7_';
 function dyReadJsonStorage(key){
   try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}
@@ -653,13 +671,13 @@ function readStoredAuth(){
   const keys=[DY_AUTH_STORAGE_KEY].concat(DY_AUTH_LEGACY_KEYS);
   for(const key of keys){
     const auth=dyReadJsonStorage(key);
-    if(auth&&auth.token&&(!auth.expiresAt||Number(auth.expiresAt)>Date.now())){
+    if(auth&&(auth.token||auth.rememberKey)&&(!auth.expiresAt||Number(auth.expiresAt)>Date.now())){
       if(key!==DY_AUTH_STORAGE_KEY){try{localStorage.setItem(DY_AUTH_STORAGE_KEY,JSON.stringify(auth))}catch(e){}}
       return auth;
     }
   }
   let legacy='';try{legacy=localStorage.getItem('DY_TOKEN')||''}catch(e){}
-  return legacy?{token:legacy,expiresAt:0,user:null}:null
+  return legacy?{token:legacy,rememberKey:'',expiresAt:0,user:null}:null
 }
 function dyOpenAuthDb(){
   return new Promise((resolve,reject)=>{
@@ -688,28 +706,60 @@ async function dyIdbDelete(key){
     await new Promise((resolve,reject)=>{const tx=db.transaction(DY_AUTH_DB_STORE,'readwrite');tx.objectStore(DY_AUTH_DB_STORE).delete(key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)});
   }catch(e){}
 }
-function dyAuthStillUsable(auth){return !!(auth&&auth.token&&(!auth.expiresAt||Number(auth.expiresAt)>Date.now()))}
+async function dyVaultGet(){
+  try{
+    if(!('caches' in window))return null;
+    const cache=await caches.open(DY_AUTH_VAULT_CACHE);
+    const res=await cache.match(DY_AUTH_VAULT_URL);
+    if(!res)return null;
+    return await res.json();
+  }catch(e){return null}
+}
+async function dyVaultSet(auth){
+  try{
+    if(!('caches' in window))return;
+    const cache=await caches.open(DY_AUTH_VAULT_CACHE);
+    await cache.put(DY_AUTH_VAULT_URL,new Response(JSON.stringify(auth),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}));
+  }catch(e){}
+}
+async function dyVaultDelete(){
+  try{if('caches' in window){const cache=await caches.open(DY_AUTH_VAULT_CACHE);await cache.delete(DY_AUTH_VAULT_URL)}}catch(e){}
+}
+function dyWriteAuthLocal(auth){
+  try{
+    if(auth&&auth.token)localStorage.setItem('DY_TOKEN',String(auth.token));
+    else localStorage.removeItem('DY_TOKEN');
+    localStorage.setItem(DY_AUTH_STORAGE_KEY,JSON.stringify(auth||{}));
+  }catch(e){}
+}
+function dySaveAuthEverywhere(auth){
+  dyWriteAuthLocal(auth);
+  dyIdbSet('auth',auth);
+  dyVaultSet(auth);
+}
+function dyAuthStillUsable(auth){return !!(auth&&(auth.token||auth.rememberKey)&&(!auth.expiresAt||Number(auth.expiresAt)>Date.now()))}
 async function dyRestoreAuthBackup(){
-  if(state.token)return true;
-  const auth=await dyIdbGet('auth');
+  if(state.token||state.rememberKey)return true;
+  let auth=await dyIdbGet('auth');
+  if(!dyAuthStillUsable(auth))auth=await dyVaultGet();
   if(!dyAuthStillUsable(auth))return false;
   state.token=String(auth.token||'');
+  state.rememberKey=String(auth.rememberKey||'');
   state.sessionExpiresAt=Number(auth.expiresAt||0);
   state.user=auth.user||null;
-  try{localStorage.setItem('DY_TOKEN',state.token);localStorage.setItem(DY_AUTH_STORAGE_KEY,JSON.stringify(auth))}catch(e){}
+  dyWriteAuthLocal(auth);
   return true;
 }
 function dyPersistCurrentAuthSnapshot(){
-  if(!state.token)return;
-  const auth={token:state.token,expiresAt:state.sessionExpiresAt||0,user:state.user||null,savedAt:Date.now()};
-  try{localStorage.setItem('DY_TOKEN',state.token);localStorage.setItem(DY_AUTH_STORAGE_KEY,JSON.stringify(auth))}catch(e){}
-  dyIdbSet('auth',auth);
+  if(!state.token&&!state.rememberKey)return;
+  const auth={token:state.token||'',rememberKey:state.rememberKey||'',expiresAt:state.sessionExpiresAt||0,user:state.user||null,savedAt:Date.now()};
+  dySaveAuthEverywhere(auth);
 }
 function dyAskPersistentStorage(){
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>false)}catch(e){}
 }
 const initialAuth=readStoredAuth();
-const state={token:initialAuth?initialAuth.token:'',sessionExpiresAt:initialAuth?Number(initialAuth.expiresAt||0):0,user:initialAuth&&initialAuth.user?initialAuth.user:null,settings:null,batches:[],batch:null,selectedPatient:'__all__',sequence:false,currentIndex:0,users:[],parsedImport:null,importTitleAuto:true,importDefaultTitle:''};
+const state={token:initialAuth?String(initialAuth.token||''):'',rememberKey:initialAuth?String(initialAuth.rememberKey||''):'',sessionExpiresAt:initialAuth?Number(initialAuth.expiresAt||0):0,user:initialAuth&&initialAuth.user?initialAuth.user:null,settings:null,batches:[],batch:null,selectedPatient:'__all__',sequence:false,currentIndex:0,users:[],parsedImport:null,importTitleAuto:true,importDefaultTitle:''};
 const dyDetailMemoryCache=new Map();
 const dyDetailPrefetching=new Map();
 let dyWarmPromise=null;
@@ -771,7 +821,6 @@ window.addEventListener('message',event=>{
   const data=response.data;
   if(!data||data.success===false){
     const msg=data&&data.message?data.message:'Lỗi không xác định';
-    if(dyIsInvalidSessionError(msg))setTimeout(()=>forceLogout(),0);
     pending.reject(new Error(msg));
     return;
   }
@@ -857,16 +906,13 @@ function prewarmBackend(){
   return dyWarmPromise
 }
 function persistAuth(res){
-  state.token=String(res&&res.token||state.token||'');
-  if(res&&Object.prototype.hasOwnProperty.call(res,'sessionExpiresAt')){
-    state.sessionExpiresAt=Number(res.sessionExpiresAt||0);
-  }
+  state.token=String(res&&Object.prototype.hasOwnProperty.call(res,'token')?res.token:(state.token||''));
+  if(res&&Object.prototype.hasOwnProperty.call(res,'rememberKey'))state.rememberKey=String(res.rememberKey||state.rememberKey||'');
+  if(res&&Object.prototype.hasOwnProperty.call(res,'sessionExpiresAt'))state.sessionExpiresAt=Number(res.sessionExpiresAt||0);
   const user=(res&&res.user)||state.user||(initialAuth&&initialAuth.user)||null;
-  if(state.token){
-    const auth={token:state.token,expiresAt:state.sessionExpiresAt||0,user:user,savedAt:Date.now()};
-    try{localStorage.setItem('DY_TOKEN',state.token)}catch(e){}
-    try{localStorage.setItem(DY_AUTH_STORAGE_KEY,JSON.stringify(auth))}catch(e){}
-    dyIdbSet('auth',auth);
+  if(state.token||state.rememberKey){
+    const auth={token:state.token||'',rememberKey:state.rememberKey||'',expiresAt:state.sessionExpiresAt||0,user:user,savedAt:Date.now()};
+    dySaveAuthEverywhere(auth);
     dyAskPersistentStorage();
   }
 }
@@ -977,6 +1023,19 @@ function dyIsInvalidSessionError(error){
     msg.includes('thông tin tài khoản đã thay đổi');
 }
 function dySleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+async function dyTryResumeRememberedSession(){
+  if(!state.rememberKey)return false;
+  try{
+    const res=await gas('resumeSession',{rememberKey:state.rememberKey},{silent:true,timeoutMs:60000});
+    persistAuth(res);
+    applyBootstrapPayload(res);
+    hideQuickStatus();
+    refreshBatches(true);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
 async function bootstrap(){
   const cached=readBootstrapCache()||(state.user?{savedAt:Date.now(),user:state.user,settings:state.settings||{warehouseName:'Kho Đông Y',departmentName:'Khoa Y học dân tộc'},batches:state.batches||[],users:state.users||[],sessionExpiresAt:state.sessionExpiresAt||0}:null);
   if(cached){
@@ -997,6 +1056,9 @@ async function bootstrap(){
     }catch(e){
       lastError=e;
       if(dyIsInvalidSessionError(e)){
+        // Token có thể mất ở phía Apps Script/deployment nhưng khóa ghi nhớ vẫn còn.
+        // Thử cấp lại token trước khi buộc người dùng đăng nhập.
+        if(await dyTryResumeRememberedSession())return;
         hideQuickStatus();
         forceLogout();
         $('loginError').textContent=e.message;
@@ -1014,7 +1076,7 @@ async function bootstrap(){
   setTimeout(()=>{if(state.token)bootstrap().catch(()=>{})},12000);
 }
 function forceLogout(){
-  state.token='';state.sessionExpiresAt=0;state.user=null;state.batch=null;
+  state.token='';state.rememberKey='';state.sessionExpiresAt=0;state.user=null;state.batch=null;
   try{localStorage.removeItem('DY_TOKEN')}catch(e){}
   try{localStorage.removeItem(DY_AUTH_STORAGE_KEY)}catch(e){}
   DY_AUTH_LEGACY_KEYS.forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
@@ -1022,10 +1084,11 @@ function forceLogout(){
   DY_BOOTSTRAP_LEGACY_KEYS.forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
   dyIdbDelete('auth');
   dyIdbDelete('bootstrap');
+  dyVaultDelete();
   $('appView').classList.add('hidden');$('loginView').classList.remove('hidden');
   hideQuickStatus()
 }
-async function logout(){try{await gas('logout')}catch(e){}forceLogout()}
+async function logout(){try{await gas('logout',{rememberKey:state.rememberKey||''})}catch(e){}forceLogout()}
 function showPage(name){document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));const page=$('page-'+name);if(page)page.classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(name==='audit')loadAudit();if(name==='users')renderUsers();if(name==='import')prepareImportPage()}
 async function refreshBatches(silent=false){try{const r=await gas('listBatches',{},silent?{silent:true,timeoutMs:45000}:{});state.batches=r.batches||[];renderBatches();saveBootstrapCache();scheduleBatchPrefetch();if(!silent)toast('Đã làm mới','success')}catch(e){if(!silent)toast(e.message,'error')}}
 async function prepareImportPage(force=false){
@@ -2488,13 +2551,12 @@ async function importParsedBatch(){
 /* ================= END V1.23 ================= */
 
 
-async function dyLaunchV129(){
+async function dyLaunchV130(){
   startDyBridge();
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+  if('serviceWorker' in navigator){try{await navigator.serviceWorker.register('./sw.js');await navigator.serviceWorker.ready}catch(e){}}
   dyAskPersistentStorage();
-  if(!state.token)await dyRestoreAuthBackup();
-  if(state.token){
-    // Có token đã lưu: tuyệt đối không hiện form đăng nhập trong lúc khôi phục phiên.
+  if(!state.token&&!state.rememberKey)await dyRestoreAuthBackup();
+  if(state.token||state.rememberKey){
     $('loginView').classList.add('hidden');
     const cached=readBootstrapCache()||(await dyIdbGet('bootstrap'));
     if(cached&&cached.user){
@@ -2504,16 +2566,27 @@ async function dyLaunchV129(){
       applyBootstrapPayload({user:state.user,settings:{warehouseName:'Kho Đông Y',departmentName:'Khoa Y học dân tộc'},batches:[],users:[]},{cached:true});
     }
     const restoring=showLoading('Đang khôi phục phiên đăng nhập...');
-    try{await bootstrap()}finally{hideLoading(restoring)}
+    try{
+      if(state.token)await bootstrap();
+      else if(!(await dyTryResumeRememberedSession())){
+        forceLogout();
+        $('loginError').textContent='Không khôi phục được phiên đã lưu. Vui lòng đăng nhập lại.';
+      }
+    }finally{hideLoading(restoring)}
   }else{
     $('loginView').classList.remove('hidden');
     $('appView').classList.add('hidden');
     $('loginUsername').focus();
   }
 }
-window.addEventListener('load',()=>{dyLaunchV129().catch(()=>{if(!state.token){$('loginView').classList.remove('hidden');$('loginUsername').focus()}})});
+window.addEventListener('load',()=>{dyLaunchV130().catch(()=>{if(!state.token&&!state.rememberKey){$('loginView').classList.remove('hidden');$('loginUsername').focus()}})});
 window.addEventListener('pagehide',()=>dyPersistCurrentAuthSnapshot());
 
+
+/* ================= V1.30 PERSISTENT SESSION RECOVERY =================
+ * Token + rememberKey lưu ở localStorage, IndexedDB và Cache Storage.
+ * Nếu token mất/không còn trên backend, resumeSession cấp lại token mà không hỏi mật khẩu.
+ */
 
 /* ================= V1.26 AUTHORITATIVE EXIT POLICY =================
  * Nút trên: THOÁT KHÔNG LƯU / TIẾP TỤC PHÁT.
@@ -2629,6 +2702,135 @@ togglePatientPickerMenu=function(force){
 window.addEventListener('resize',()=>{if(document.body.classList.contains('dy-patient-picker-open'))dyPositionPatientPickerV127()},{passive:true});
 window.addEventListener('orientationchange',()=>setTimeout(()=>{if(document.body.classList.contains('dy-patient-picker-open'))dyPositionPatientPickerV127()},120),{passive:true});
 /* ================= END V1.27 ================= */
+
+/* ================= V1.31 AUTHORITATIVE EXIT + FIXED PATIENT PICKER =================
+ * 1) Nút trên "Thoát phiếu": chỉ THOÁT KHÔNG LƯU, không gọi gas('exitBatch'),
+ *    không gọi dyPerformSaveAndExitBatch và không đi qua requestExitBatch legacy.
+ * 2) Menu bệnh nhân: position:fixed theo viewport, z-index độc lập; tự mở lên/xuống
+ *    và giới hạn chiều cao theo thanh sequence-nav thực tế.
+ */
+function dyExitTopOnlyBoxV131(message){
+  return new Promise(resolve=>{
+    const host=$('modalHost');
+    host.innerHTML=`<div class="modal-backdrop"><div class="modal"><h2>Thoát phiếu?</h2><div style="white-space:pre-line;line-height:1.5">${esc(message)}</div><div class="dy-v119-exit-note"><b>Thoát</b>: không yêu cầu lưu thêm; các thao tác còn nằm trong hàng đợi của phiếu này trên thiết bị sẽ bị bỏ. Dữ liệu đã gửi thành công lên máy chủ trước đó vẫn được giữ.</div><div class="row right" style="justify-content:flex-end;margin-top:18px"><button type="button" class="btn btn-light" id="dyV131Continue">Tiếp tục phát</button><button type="button" class="btn btn-red" id="dyV131Exit">Thoát</button></div></div></div>`;
+    let done=false;
+    const finish=v=>{if(done)return;done=true;host.innerHTML='';resolve(v)};
+    $('dyV131Continue').onclick=()=>finish(false);
+    $('dyV131Exit').onclick=()=>finish(true);
+  });
+}
+async function dyExitBatchWithoutSaveV131(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();}
+  const b=state.batch;if(!b)return false;
+  dyStopCardSpeech(true);
+  const remaining=(b.patients||[]).filter(p=>!['DONE','AUTO_DONE'].includes(p.state)).length;
+  const ok=await dyExitTopOnlyBoxV131(`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân.\nCòn ${remaining} bệnh nhân chưa hoàn thành.`);
+  if(!ok)return false;
+  const batchId=b.batchId;
+  dyDiscardPendingBatchActions(batchId);
+  dyReturnToBatchList();
+  refreshBatches(true);
+  toast('Đã thoát phiếu mà không lưu thêm.','success');
+  return false;
+}
+// Mọi lời gọi legacy requestExitBatch còn sót cũng bị ép về chính sách THOÁT KHÔNG LƯU.
+requestExitBatch=dyExitBatchWithoutSaveV131;
+function dyBindExitTopV131(){
+  const top=$('exitBatchTopButton');if(!top)return;
+  top.type='button';
+  top.textContent='↩ Thoát phiếu';
+  top.title='Thoát khỏi phiếu mà không lưu thêm';
+  top.removeAttribute('onclick');
+  if(top.dataset.v131ExitBound==='1')return;
+  top.dataset.v131ExitBound='1';
+  top.addEventListener('click',dyExitBatchWithoutSaveV131,true);
+}
+const dyRenderDetailV131Base=renderDetail;
+renderDetail=function(){
+  const out=dyRenderDetailV131Base.apply(this,arguments);
+  dyBindExitTopV131();
+  return out;
+};
+window.addEventListener('load',()=>setTimeout(dyBindExitTopV131,0));
+
+let dyV131PickerRAF=0;
+function dyResetPatientPickerPositionV131(){
+  const menu=$('patientPickerMenu'),list=$('patientOptionList');
+  document.body.classList.remove('dy-v131-picker-open');
+  if(menu){
+    menu.classList.remove('dy-v131-fixed','dy-open-upward');
+    ['left','right','top','bottom','width','maxHeight'].forEach(k=>menu.style[k]='');
+  }
+  if(list)list.style.maxHeight='';
+}
+function dyPositionPatientPickerV131(){
+  dyV131PickerRAF=0;
+  const menu=$('patientPickerMenu'),btn=$('patientPickerButton'),list=$('patientOptionList');
+  if(!menu||!btn||!list||menu.classList.contains('hidden'))return;
+  document.body.classList.add('dy-v131-picker-open');
+  menu.classList.add('dy-v131-fixed');
+  menu.classList.remove('dy-open-upward');
+
+  const br=btn.getBoundingClientRect();
+  const vh=Math.max(document.documentElement.clientHeight||0,window.innerHeight||0);
+  const vw=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0);
+  const gap=6, edge=8;
+  let safeBottom=vh-edge;
+  const nav=$('sequenceNav');
+  if(nav&&!nav.classList.contains('hidden')){
+    const nr=nav.getBoundingClientRect();
+    if(nr.top>edge&&nr.top<vh)safeBottom=Math.min(safeBottom,nr.top-gap);
+  }
+
+  const width=Math.max(220,Math.min(br.width,vw-edge*2));
+  const left=Math.max(edge,Math.min(br.left,vw-edge-width));
+  menu.style.left=Math.round(left)+'px';
+  menu.style.width=Math.round(width)+'px';
+  menu.style.right='auto';
+
+  const search=menu.querySelector('.patient-picker-search-box');
+  const searchH=Math.ceil(search?search.getBoundingClientRect().height:60);
+  const listNatural=Math.min(Math.max(list.scrollHeight||0,96),430);
+  const desired=Math.min(searchH+listNatural+2,500);
+  const below=Math.max(0,safeBottom-br.bottom-gap);
+  const above=Math.max(0,br.top-edge-gap);
+  const openUp=(below<Math.min(desired,220) && above>below);
+  const room=Math.max(120,openUp?above:below);
+  const menuH=Math.min(desired,room);
+  const listH=Math.max(72,menuH-searchH-2);
+  list.style.maxHeight=Math.floor(listH)+'px';
+  menu.style.maxHeight=Math.floor(menuH)+'px';
+
+  if(openUp){
+    menu.style.top='auto';
+    menu.style.bottom=Math.round(vh-br.top+gap)+'px';
+  }else{
+    menu.style.bottom='auto';
+    menu.style.top=Math.round(br.bottom+gap)+'px';
+  }
+}
+function dySchedulePatientPickerPositionV131(){
+  if(dyV131PickerRAF)return;
+  dyV131PickerRAF=requestAnimationFrame(dyPositionPatientPickerV131);
+}
+const dyTogglePatientPickerMenuV131Base=togglePatientPickerMenu;
+togglePatientPickerMenu=function(force){
+  const result=dyTogglePatientPickerMenuV131Base.apply(this,arguments);
+  const menu=$('patientPickerMenu');
+  const open=!!(menu&&!menu.classList.contains('hidden'));
+  if(open){
+    document.body.classList.add('dy-v131-picker-open');
+    dySchedulePatientPickerPositionV131();
+  }else{
+    dyResetPatientPickerPositionV131();
+  }
+  return result;
+};
+window.addEventListener('resize',()=>{if(document.body.classList.contains('dy-v131-picker-open'))dySchedulePatientPickerPositionV131()},{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(()=>{if(document.body.classList.contains('dy-v131-picker-open'))dySchedulePatientPickerPositionV131()},100),{passive:true});
+window.addEventListener('scroll',()=>{if(document.body.classList.contains('dy-v131-picker-open'))dySchedulePatientPickerPositionV131()},{passive:true,capture:true});
+/* ================= END V1.31 ================= */
+
 
 </script>
 </body>
