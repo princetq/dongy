@@ -1,0 +1,38 @@
+{
+  "name": "Phát thuốc Đông Y",
+  "short_name": "Đông Y",
+  "description": "Ứng dụng phát thuốc Đông Y - Kho Đông Y · Khoa Y học dân tộc",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e0a943",
+  "theme_color": "#7b5b20",
+  "lang": "vi-VN",
+  "icons": [
+    {
+      "src": "./icons/app-v129-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/app-v129-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/app-v129-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/app-v129-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
