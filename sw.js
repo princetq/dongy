@@ -1,4 +1,4 @@
-const CACHE_NAME='phat-thuoc-dong-y-v1-25-github';
+const CACHE_NAME='phat-thuoc-dong-y-v1-27-github';
 const APP_SHELL=[
   './',
   './index.html',
