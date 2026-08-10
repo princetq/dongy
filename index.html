@@ -89,7 +89,7 @@ body.dispensing-focus .detail-title-row,body.dispensing-focus .detail-config-row
 <script>
 'use strict';
 
-const DY_FRONTEND_VERSION = 'DONG_Y_GITHUB_V1_37_CLEAN';
+const DY_FRONTEND_VERSION = 'DONG_Y_GITHUB_V1_38_FREE_CLEAN';
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const AUTH_STORAGE_KEY = 'phat_thuoc_dong_y_auth';
 const BOOTSTRAP_CACHE_KEY = 'phat_thuoc_dong_y_bootstrap';
@@ -1304,18 +1304,98 @@ function openHistoryVoucher(index) {
   $('modalHost').innerHTML = `<div class="modal-backdrop"><div class="modal"><div class="row space"><div><h2 style="margin:0">${esc(item.patientName)}</h2><div class="muted">${item.patientCode?`Mã BN: ${esc(item.patientCode)} · `:''}${esc(item.batchTitle)} · ${item.dayCount} ngày</div></div><button class="btn btn-light" onclick="closeModal()">✕</button></div><div class="preview-table-wrap"><table class="medicine-table"><colgroup><col class="col-stt"><col class="col-herb"><col class="col-unit"><col class="col-qty"></colgroup><thead><tr><th class="stt">STT</th><th class="herb-title">Tên vị thuốc</th><th class="unit">ĐV</th><th class="qty">SL</th></tr></thead><tbody>${item.items.map((it,i) => `<tr><td class="stt">${i+1}</td><td class="herb-name">${esc(it.herbName)}</td><td class="unit">${esc(it.unit)}</td><td class="qty">${fmtQty(it.quantity)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Không có dòng thuốc.</td></tr>'}</tbody></table></div></div></div>`;
 }
 
-function getVietnameseVoice() {
-  const voices = speechSynthesis.getVoices().filter(v => /^vi(?:-|$)/i.test(v.lang || ''));
-  if (!voices.length) return null;
-  const score = voice => { const n=(voice.name||'').toLowerCase(); return (/(natural|neural|online)/.test(n)?100:0)+(/(microsoft|google|apple|siri)/.test(n)?20:0); };
-  return voices.sort((a,b) => score(b)-score(a))[0];
+let vietnameseVoiceCache = null;
+let vietnameseVoiceWaitPromise = null;
+let speechRequestSerial = 0;
+
+function vietnameseVoiceScore(voice) {
+  const lang = String(voice?.lang || '').replace('_','-').toLowerCase();
+  const name = String(voice?.name || '').toLowerCase();
+  let score = 0;
+  if (lang === 'vi-vn') score += 500;
+  else if (lang.startsWith('vi-')) score += 350;
+  else if (lang === 'vi') score += 300;
+  if (/(natural|neural|premium|enhanced|online)/.test(name)) score += 120;
+  if (/(google|microsoft|apple|siri)/.test(name)) score += 40;
+  if (voice?.default) score += 5;
+  return score;
 }
-function speakText(text) {
-  if (!('speechSynthesis' in window)) { toast('Thiết bị không hỗ trợ đọc giọng nói.', 'error'); return false; }
-  const voice = getVietnameseVoice();
-  if (!voice) { toast('Thiết bị chưa có giọng đọc tiếng Việt. Hãy cài giọng Việt Nam trong hệ thống.', 'error'); return false; }
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang='vi-VN'; utterance.voice=voice; utterance.rate=0.94;
+function getVietnameseVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = speechSynthesis.getVoices() || [];
+  const candidates = voices.filter(voice => /^vi(?:-|_|$)/i.test(String(voice.lang || '')));
+  if (!candidates.length) {
+    vietnameseVoiceCache = null;
+    return null;
+  }
+  candidates.sort((a,b) => vietnameseVoiceScore(b) - vietnameseVoiceScore(a));
+  vietnameseVoiceCache = candidates[0];
+  return vietnameseVoiceCache;
+}
+function warmVietnameseVoiceList() {
+  if (!('speechSynthesis' in window)) return;
+  try { speechSynthesis.getVoices(); } catch {}
+  getVietnameseVoice();
+}
+function waitForVietnameseVoice(timeoutMs=4500) {
+  if (!('speechSynthesis' in window)) return Promise.resolve(null);
+  const immediate = getVietnameseVoice();
+  if (immediate) return Promise.resolve(immediate);
+  if (vietnameseVoiceWaitPromise) return vietnameseVoiceWaitPromise;
+  vietnameseVoiceWaitPromise = new Promise(resolve => {
+    let finished = false;
+    let pollTimer = null;
+    let timeoutTimer = null;
+    const cleanup = () => {
+      if (pollTimer) clearInterval(pollTimer);
+      if (timeoutTimer) clearTimeout(timeoutTimer);
+      try { speechSynthesis.removeEventListener('voiceschanged', check); } catch {}
+    };
+    const finish = voice => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      resolve(voice || null);
+    };
+    const check = () => {
+      const voice = getVietnameseVoice();
+      if (voice) finish(voice);
+    };
+    try { speechSynthesis.addEventListener('voiceschanged', check); } catch {}
+    try { speechSynthesis.getVoices(); } catch {}
+    try { speechSynthesis.resume(); } catch {}
+    pollTimer = setInterval(check, 120);
+    timeoutTimer = setTimeout(() => finish(getVietnameseVoice()), Math.max(1200, Number(timeoutMs) || 4500));
+    setTimeout(check, 0);
+  }).finally(() => { vietnameseVoiceWaitPromise = null; });
+  return vietnameseVoiceWaitPromise;
+}
+async function resolveVietnameseVoiceForSpeech() {
+  const immediate = vietnameseVoiceCache || getVietnameseVoice();
+  if (immediate) return immediate;
+  let prepareTimer = setTimeout(() => showQuickStatus('Đang chuẩn bị giọng đọc tiếng Việt...'), 350);
+  try {
+    return await waitForVietnameseVoice(4500);
+  } finally {
+    clearTimeout(prepareTimer);
+    hideQuickStatus();
+  }
+}
+async function speakText(text, requestToken=null) {
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    toast('Thiết bị không hỗ trợ đọc giọng nói.', 'error');
+    return false;
+  }
+  const voice = await resolveVietnameseVoiceForSpeech();
+  if (requestToken !== null && requestToken !== speechRequestSerial) return false;
+  if (!voice) {
+    toast('Không tìm thấy giọng đọc tiếng Việt trên thiết bị sau khi đã chờ tải danh sách giọng.', 'error');
+    return false;
+  }
+  const utterance = new SpeechSynthesisUtterance(String(text || ''));
+  utterance.lang = 'vi-VN';
+  utterance.voice = voice;
+  utterance.rate = 0.94;
   speechSynthesis.speak(utterance);
   return true;
 }
@@ -1325,14 +1405,16 @@ function findItemForSpeech(kind, id) {
   for (const p of state.batch.patients) { const item=p.items.find(i=>String(i.itemId)===String(id)); if(item) return item; }
   return null;
 }
-function speakOneHerb(kind, id) {
+async function speakOneHerb(kind, id) {
   stopCardSpeech();
+  const requestToken = speechRequestSerial;
   const item = findItemForSpeech(kind, id);
   if (!item) return;
   const qty = kind === 'separated' ? item.finalTotal : item.finalQty;
-  speakText(speechHerbLine(item.herbName, qty, item.unit));
+  await speakText(speechHerbLine(item.herbName, qty, item.unit), requestToken);
 }
 function stopCardSpeech(cancel=true) {
+  speechRequestSerial++;
   cardSpeechState.cancelled = true;
   cardSpeechState.active = false;
   if (cardSpeechState.timer) clearTimeout(cardSpeechState.timer);
@@ -1345,14 +1427,19 @@ function cardSpeechItems(kind, id) {
   const patient = state.batch.patients.find(p => String(p.voucherId) === String(id));
   return patient ? patient.items.filter(i => !i.isSeparated).map(i => ({ name:i.herbName, qty:i.finalQty, unit:i.unit })) : [];
 }
-function toggleCardSpeech(kind, id) {
+async function toggleCardSpeech(kind, id) {
   const key = `${kind}:${id}`;
   if (cardSpeechState.active && cardSpeechState.key === key) { stopCardSpeech(); return; }
   stopCardSpeech();
+  const requestToken = speechRequestSerial;
   const items = cardSpeechItems(kind, id);
   if (!items.length) return;
-  const voice = getVietnameseVoice();
-  if (!voice) { toast('Thiết bị chưa có giọng đọc tiếng Việt.', 'error'); return; }
+  const voice = await resolveVietnameseVoiceForSpeech();
+  if (requestToken !== speechRequestSerial) return;
+  if (!voice) {
+    toast('Không tìm thấy giọng đọc tiếng Việt trên thiết bị sau khi đã chờ tải danh sách giọng.', 'error');
+    return;
+  }
   cardSpeechState = { active:true, key, timer:null, cancelled:false };
   const run = () => {
     if (!cardSpeechState.active || cardSpeechState.cancelled || cardSpeechState.key !== key) return;
@@ -1370,6 +1457,11 @@ function toggleCardSpeech(kind, id) {
 }
 
 function registerGlobalEvents() {
+  if ('speechSynthesis' in window) {
+    try { speechSynthesis.addEventListener('voiceschanged', warmVietnameseVoiceList); } catch {}
+    window.addEventListener('pageshow', warmVietnameseVoiceList, {passive:true});
+    window.addEventListener('focus', warmVietnameseVoiceList, {passive:true});
+  }
   document.addEventListener('pointerdown', event => {
     const menu=$('patientPickerMenu'), button=$('patientPickerButton');
     if (!menu || menu.classList.contains('hidden')) return;
@@ -1390,6 +1482,9 @@ function registerGlobalEvents() {
 
 function launchApp() {
   startBridge();
+  warmVietnameseVoiceList();
+  setTimeout(warmVietnameseVoiceList, 250);
+  setTimeout(warmVietnameseVoiceList, 1000);
   registerGlobalEvents();
   // Khôi phục phiên localStorage trước mọi tác vụ mạng/service worker.
   // Mục tiêu: mở lại PWA/F5 vào giao diện ngay, giống app Phát thuốc.
@@ -1408,6 +1503,7 @@ window.DY_CLEAN_BUILD = Object.freeze({
   patientPicker: 'body-fixed-visualViewport',
   exitPolicy: 'top-exit-to-batch-overview-bottom-save-and-exit',
   speechUnit: 'normalized-vietnamese-unit-labels',
+  speechVoiceInit: 'warmup-voiceschanged-retry-free',
   herbHeader: 'centered'
 });
 </script>
