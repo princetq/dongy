@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
-  <title>Phát thuốc Đông Y V1.25</title>
+  <title>Phát thuốc Đông Y V1.27</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/app-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./icons/app-180.png">
@@ -510,6 +510,14 @@
     }
     /* ================= END V1.23 UI ================= */
 
+
+    /* ================= V1.27: menu bệnh nhân không bị thanh nút dưới che ================= */
+    body.dy-patient-picker-open .detail-head{z-index:80}
+    body.dy-patient-picker-open .patient-picker-combo{z-index:81}
+    body.dy-patient-picker-open .patient-picker-menu{z-index:120}
+    .patient-picker-menu.dy-open-upward{top:auto;bottom:calc(100% + 6px)}
+    .patient-option-list{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+    /* ================= END V1.27 UI ================= */
 </style>
 </head>
 <body>
@@ -628,7 +636,7 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_25';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_27';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
 const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_V1_24';
@@ -2432,6 +2440,123 @@ window.addEventListener('load',()=>{
   }
   if(state.token)bootstrap();else $('loginUsername').focus();
 });
+
+
+/* ================= V1.26 AUTHORITATIVE EXIT POLICY =================
+ * Nút trên: THOÁT KHÔNG LƯU / TIẾP TỤC PHÁT.
+ * Nút dưới: LƯU VÀ THOÁT.
+ * Định nghĩa cuối cùng để loại bỏ mọi luồng legacy V1.14/V1.15.
+ */
+function dyExitTopOnlyBoxV126(message){
+  return new Promise(resolve=>{
+    const host=$('modalHost');
+    host.innerHTML=`<div class="modal-backdrop"><div class="modal"><h2>Thoát phiếu?</h2><div style="white-space:pre-line;line-height:1.5">${esc(message)}</div><div class="dy-v119-exit-note">Thoát sẽ không yêu cầu lưu thêm. Những thay đổi còn nằm trong hàng đợi trên thiết bị sẽ bị bỏ; dữ liệu đã gửi thành công lên máy chủ trước đó vẫn được giữ.</div><div class="row right" style="justify-content:flex-end;margin-top:18px"><button type="button" class="btn btn-light" id="dyV126Continue">Tiếp tục phát</button><button type="button" class="btn btn-red" id="dyV126Exit">Thoát</button></div></div></div>`;
+    const finish=v=>{host.innerHTML='';resolve(v)};
+    $('dyV126Continue').onclick=()=>finish(false);
+    $('dyV126Exit').onclick=()=>finish(true);
+  });
+}
+requestExitBatch=async function(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  const b=state.batch;if(!b)return false;
+  dyStopCardSpeech(true);
+  const remaining=b.patients.filter(p=>!['DONE','AUTO_DONE'].includes(p.state)).length;
+  const ok=await dyExitTopOnlyBoxV126(`Đã hoàn thành ${b.completedPatients}/${b.totalPatients} bệnh nhân.\nCòn ${remaining} bệnh nhân chưa hoàn thành.`);
+  if(!ok)return false;
+  const batchId=b.batchId;
+  dyDiscardPendingBatchActions(batchId);
+  dyReturnToBatchList();
+  refreshBatches(true);
+  toast('Đã thoát phiếu mà không lưu thêm.','success');
+  return false;
+};
+requestSaveAndExitBatch=async function(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  const btn=$('exitBatchSequenceButton');
+  if(!state.batch)return false;
+  if(btn&&btn.dataset.busy==='1')return false;
+  if(btn){btn.dataset.busy='1';btn.disabled=true;}
+  try{
+    dyStopCardSpeech(true);
+    await dyPerformSaveAndExitBatch();
+  }catch(e){
+    toast((e&&e.message)||'Không thực hiện được Lưu và thoát.','error');
+  }finally{
+    if(btn){btn.dataset.busy='0';btn.disabled=false;}
+  }
+  return false;
+};
+function dyBindExitButtonsV126(){
+  const top=$('exitBatchTopButton');
+  if(top){
+    top.type='button';
+    top.textContent='↩ Thoát phiếu';
+    top.title='Thoát khỏi phiếu mà không lưu thêm';
+    top.onclick=ev=>requestExitBatch(ev);
+  }
+  const save=$('exitBatchSequenceButton');
+  if(save){
+    save.type='button';
+    save.textContent='💾 Lưu và thoát';
+    save.title='Lưu tiến độ và trở về danh sách phiếu';
+    save.onclick=ev=>requestSaveAndExitBatch(ev);
+    save.style.pointerEvents='auto';
+  }
+}
+const dyRenderDetailV126=renderDetail;
+renderDetail=function(){
+  const result=dyRenderDetailV126.apply(this,arguments);
+  dyBindExitButtonsV126();
+  return result;
+};
+window.addEventListener('load',()=>setTimeout(dyBindExitButtonsV126,0));
+/* ================= END V1.26 ================= */
+
+/* ================= V1.27 PATIENT PICKER VIEWPORT FIX =================
+ * Menu chọn bệnh nhân không được bị thanh điều hướng dưới che.
+ * - Nâng stacking context của detail-head khi menu mở.
+ * - Tính khoảng trống đến sequenceNav và giới hạn danh sách bằng cuộn nội bộ.
+ * - Nếu phía dưới quá thấp, tự mở menu lên trên.
+ */
+function dyPositionPatientPickerV127(){
+  const menu=$('patientPickerMenu'),btn=$('patientPickerButton'),list=$('patientOptionList');
+  if(!menu||!btn||!list||menu.classList.contains('hidden'))return;
+  const nav=$('sequenceNav');
+  const br=btn.getBoundingClientRect();
+  const vh=Math.max(document.documentElement.clientHeight||0,window.innerHeight||0);
+  let safeBottom=vh-8;
+  if(nav&&!nav.classList.contains('hidden')){
+    const nr=nav.getBoundingClientRect();
+    if(nr.top>0&&nr.top<vh)safeBottom=Math.min(safeBottom,nr.top-8);
+  }
+  const below=Math.max(0,safeBottom-br.bottom-6);
+  const above=Math.max(0,br.top-8);
+  const search=menu.querySelector('.patient-picker-search-box');
+  const searchH=search?Math.ceil(search.getBoundingClientRect().height):61;
+  const chrome=searchH+12;
+  const preferUp=below<190&&above>below;
+  menu.classList.toggle('dy-open-upward',preferUp);
+  const room=preferUp?above:below;
+  const listH=Math.max(96,Math.min(430,room-chrome));
+  list.style.maxHeight=listH+'px';
+}
+const dyTogglePatientPickerMenuV127Base=togglePatientPickerMenu;
+togglePatientPickerMenu=function(force){
+  const result=dyTogglePatientPickerMenuV127Base.apply(this,arguments);
+  const menu=$('patientPickerMenu');
+  const open=!!(menu&&!menu.classList.contains('hidden'));
+  document.body.classList.toggle('dy-patient-picker-open',open);
+  if(open){requestAnimationFrame(dyPositionPatientPickerV127)}
+  else{
+    if(menu)menu.classList.remove('dy-open-upward');
+    const list=$('patientOptionList');if(list)list.style.maxHeight='';
+  }
+  return result;
+};
+window.addEventListener('resize',()=>{if(document.body.classList.contains('dy-patient-picker-open'))dyPositionPatientPickerV127()},{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(()=>{if(document.body.classList.contains('dy-patient-picker-open'))dyPositionPatientPickerV127()},120),{passive:true});
+/* ================= END V1.27 ================= */
+
 </script>
 </body>
 </html>
