@@ -534,6 +534,42 @@
     .patient-picker-menu.dy-v131-fixed .patient-picker-search-box{position:sticky;top:0;z-index:3}
     .patient-picker-menu.dy-v131-fixed .patient-option-list{overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
     /* ================= END V1.31 UI ================= */
+
+
+    /* ================= V1.32: MENU BN PORTAL + MÀU TRẠNG THÁI ================= */
+    .patient-picker-menu.dy-v132-portal{
+      position:fixed!important;
+      z-index:25000!important;
+      display:flex;
+      flex-direction:column;
+      max-height:none!important;
+      min-height:0!important;
+      overflow:hidden!important;
+      margin:0!important;
+      transform:none!important;
+      overscroll-behavior:contain;
+    }
+    .patient-picker-menu.dy-v132-portal.hidden{display:none!important}
+    .patient-picker-menu.dy-v132-portal .patient-picker-search-box{flex:0 0 auto;position:relative!important;top:auto!important;z-index:2}
+    .patient-picker-menu.dy-v132-portal .patient-option-list{
+      flex:1 1 auto;
+      min-height:0!important;
+      max-height:none!important;
+      overflow-y:scroll!important;
+      overflow-x:hidden!important;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+      touch-action:pan-y;
+      padding-bottom:calc(18px + env(safe-area-inset-bottom));
+    }
+    .patient-picker-menu.dy-v132-portal .patient-option:last-child{margin-bottom:8px}
+    .patient-option-state.WAITING{color:#9a6400!important}
+    .patient-option-state.PROGRESS{color:#0d62b5!important}
+    .patient-option-state.DONE{color:#1b7a35!important}
+    .patient-option-state.AUTO_DONE{color:#546e7a!important}
+    .patient-option-state.NONE{color:#607d8b!important}
+    body.dy-v132-picker-open .sequence-nav{z-index:30!important}
+    /* ================= END V1.32 ================= */
 </style>
 </head>
 <body>
@@ -652,9 +688,9 @@
 
 <script>
 'use strict';
-const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_30';
+const DY_FRONTEND_VERSION='DONG_Y_GITHUB_V1_32';
 /* Dán URL /exec của Apps Script vào đúng biến này trước khi đưa lên GitHub. */
-const DY_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7sMbDYTr51wRBELY3PwKBLr-TNJg0KeFnLrLSVpHbExwT6g_y8hHehPkOd4k3019Sw/exec';
+const DY_GAS_WEB_APP_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
 const DY_AUTH_STORAGE_KEY='DY_AUTH_PERSISTENT_V1';
 const DY_AUTH_LEGACY_KEYS=['DY_AUTH_V1_24','DY_AUTH_V1_7'];
 const DY_BOOTSTRAP_CACHE_KEY='DY_BOOTSTRAP_PERSISTENT_V1';
@@ -2579,7 +2615,7 @@ async function dyLaunchV130(){
     $('loginUsername').focus();
   }
 }
-window.addEventListener('load',()=>{dyLaunchV130().catch(()=>{if(!state.token&&!state.rememberKey){$('loginView').classList.remove('hidden');$('loginUsername').focus()}})});
+/* V1.32: startup V1.30 disabled; dyLaunchV132 below is authoritative. */
 window.addEventListener('pagehide',()=>dyPersistCurrentAuthSnapshot());
 
 
@@ -2831,6 +2867,258 @@ window.addEventListener('orientationchange',()=>setTimeout(()=>{if(document.body
 window.addEventListener('scroll',()=>{if(document.body.classList.contains('dy-v131-picker-open'))dySchedulePatientPickerPositionV131()},{passive:true,capture:true});
 /* ================= END V1.31 ================= */
 
+
+
+/* ================= V1.32: AUTH GIỐNG APP PHÁT THUỐC + MENU PORTAL =================
+ * AUTH được đối chiếu trực tiếp với app Phát thuốc V44.5.9_FIX15:
+ * - localStorage là nguồn phiên chính.
+ * - mở lại/refresh: dựng UI ngay từ user+token đã lưu, KHÔNG chờ server rồi mới cho vào app.
+ * - server chỉ xác thực ở nền; lỗi mạng/timeout không được xóa phiên.
+ * - token backend V1.32 là payload ký HMAC, không phụ thuộc CacheService/Script Properties còn giữ token.
+ */
+const DY_AUTH_APP_STYLE_KEY_V132='phat_thuoc_dong_y_auth_v132';
+
+function dyClearPersistedAuthV132(){
+  try{localStorage.removeItem(DY_AUTH_APP_STYLE_KEY_V132)}catch(e){}
+}
+function dyReadPersistedAuthV132(){
+  const keys=[DY_AUTH_APP_STYLE_KEY_V132,DY_AUTH_STORAGE_KEY].concat(DY_AUTH_LEGACY_KEYS||[]);
+  for(const key of keys){
+    try{
+      const raw=localStorage.getItem(key);if(!raw)continue;
+      const a=JSON.parse(raw);
+      if(!a||!a.user||!a.token)continue;
+      const exp=Number(a.expiresAt||0);
+      if(exp>0&&exp<=Date.now()){try{localStorage.removeItem(key)}catch(e){};continue}
+      const out={user:a.user,token:String(a.token||''),expiresAt:exp,savedAt:Number(a.savedAt||0)};
+      if(key!==DY_AUTH_APP_STYLE_KEY_V132){try{localStorage.setItem(DY_AUTH_APP_STYLE_KEY_V132,JSON.stringify(out))}catch(e){}}
+      return out;
+    }catch(e){}
+  }
+  return null;
+}
+function dyPersistAuthV132(user,token,expiresAt){
+  if(!user||!token)return;
+  const a={user:user,token:String(token),expiresAt:Number(expiresAt||0),savedAt:Date.now()};
+  try{localStorage.setItem(DY_AUTH_APP_STYLE_KEY_V132,JSON.stringify(a))}catch(e){}
+  // Giữ khóa cũ để các hàng đợi/đoạn code legacy trong cùng bản vẫn đọc được.
+  try{localStorage.setItem(DY_AUTH_STORAGE_KEY,JSON.stringify({user:a.user,token:a.token,rememberKey:'',expiresAt:a.expiresAt,savedAt:a.savedAt}))}catch(e){}
+  try{localStorage.setItem('DY_TOKEN',a.token)}catch(e){}
+}
+function dyGetPersistedSessionTokenV132(){
+  const a=dyReadPersistedAuthV132();
+  return a?String(a.token||''):String(state.token||'');
+}
+
+// Mọi lần login/bootstrap nhận token mới đều ghi theo đúng mô hình localStorage của app Phát thuốc.
+const dyPersistAuthBeforeV132=persistAuth;
+persistAuth=function(res){
+  dyPersistAuthBeforeV132(res);
+  if(state.user&&state.token)dyPersistAuthV132(state.user,state.token,state.sessionExpiresAt||0);
+  state.rememberKey='';
+};
+
+// Mỗi request lấy token từ phiên localStorage đang tồn tại, giống getPersistedSessionToken() của app Phát thuốc.
+const dyGasBeforeV132=gas;
+gas=async function(action,payload={},options={}){
+  const persisted=dyReadPersistedAuthV132();
+  if(persisted){
+    state.token=String(persisted.token||state.token||'');
+    state.user=state.user||persisted.user||null;
+    state.sessionExpiresAt=Number(persisted.expiresAt||state.sessionExpiresAt||0);
+  }
+  return dyGasBeforeV132(action,payload,options);
+};
+
+const dyForceLogoutBeforeV132=forceLogout;
+forceLogout=function(){
+  dyClearPersistedAuthV132();
+  dyForceLogoutBeforeV132();
+};
+
+function dyRestoreQueuesAfterLocalSessionV132(){
+  try{
+    if(typeof dyLoadJson==='function'&&state.user){
+      state.itemQueue=dyLoadJson(dyQueueKey('DY_ITEM_QUEUE_V15'),[]);
+      state.finishQueue=dyLoadJson(dyQueueKey('DY_FINISH_QUEUE_V15'),[]);
+      if(typeof dyUpdateItemSaveIndicator==='function')dyUpdateItemSaveIndicator();
+      if(typeof dyUpdateFinishPanel==='function')dyUpdateFinishPanel();
+      if(typeof dyScheduleItemBatch==='function')dyScheduleItemBatch(120);
+      if(typeof dyScheduleFinishWorker==='function')dyScheduleFinishWorker(220);
+    }
+    if(typeof dyLoadExitQueue==='function'){dyLoadExitQueue();if(typeof dyScheduleExitWorker==='function')dyScheduleExitWorker(260)}
+  }catch(e){}
+}
+
+async function dyValidateRestoredSessionV132(){
+  try{
+    await bootstrap();
+  }catch(e){
+    // bootstrap hiện tại đã tự xử lý lỗi phiên thật. Lỗi mạng/timeout tuyệt đối không xóa localStorage.
+    if(!dyIsInvalidSessionError(e))showQuickStatus('Chưa kết nối được máy chủ. Phiên đăng nhập vẫn được giữ.',4000);
+  }
+}
+
+async function dyLaunchV132(){
+  startDyBridge();
+  if('serviceWorker' in navigator){try{await navigator.serviceWorker.register('./sw.js')}catch(e){}}
+  const auth=dyReadPersistedAuthV132();
+  if(!auth){
+    state.token='';state.user=null;state.sessionExpiresAt=0;state.rememberKey='';
+    $('appView').classList.add('hidden');$('loginView').classList.remove('hidden');
+    setTimeout(()=>{try{$('loginUsername').focus()}catch(e){}},50);
+    return;
+  }
+
+  state.token=auth.token;
+  state.user=auth.user;
+  state.sessionExpiresAt=auth.expiresAt;
+  state.rememberKey='';
+
+  // Điểm mấu chốt giống app Phát thuốc: vào UI NGAY từ phiên localStorage, không đợi Apps Script.
+  let cached=readBootstrapCache();
+  if(cached&&cached.user){
+    const same=String(cached.user.username||'').toLowerCase()===String(auth.user.username||'').toLowerCase();
+    if(!same)cached=null;
+  }
+  if(cached&&cached.user){
+    if(Object.prototype.hasOwnProperty.call(cached,'sessionExpiresAt'))state.sessionExpiresAt=Number(cached.sessionExpiresAt||state.sessionExpiresAt||0);
+    applyBootstrapPayload(cached,{cached:true});
+  }else{
+    applyBootstrapPayload({
+      user:auth.user,
+      settings:{warehouseName:'Kho Đông Y',departmentName:'Khoa Y học dân tộc'},
+      batches:[],users:[],sessionExpiresAt:auth.expiresAt
+    },{cached:true});
+  }
+  dyRestoreQueuesAfterLocalSessionV132();
+  showQuickStatus('Đang đồng bộ dữ liệu...',0);
+  setTimeout(()=>dyValidateRestoredSessionV132(),0);
+}
+window.addEventListener('load',()=>{dyLaunchV132().catch(()=>{
+  const a=dyReadPersistedAuthV132();
+  if(a&&a.user&&a.token){
+    state.token=a.token;state.user=a.user;state.sessionExpiresAt=a.expiresAt||0;
+    try{applyBootstrapPayload({user:a.user,settings:{warehouseName:'Kho Đông Y',departmentName:'Khoa Y học dân tộc'},batches:[],users:[]},{cached:true})}catch(e){}
+  }else{
+    $('appView').classList.add('hidden');$('loginView').classList.remove('hidden');
+  }
+})});
+
+/* ---------- Menu bệnh nhân: portal thật ra BODY, dùng visualViewport ---------- */
+function dyPatientStateClassV132(code){
+  code=String(code||'').toUpperCase();
+  return ['WAITING','PROGRESS','DONE','AUTO_DONE','NONE'].includes(code)?code:'NONE';
+}
+dyRenderPatientOptionListV123=function(){
+  const host=$('patientOptionList');if(!host||!state.batch)return;
+  const q=norm($('patientSearch')?$('patientSearch').value:'');
+  const rows=[{value:'__all__',label:'Tất cả bệnh nhân',state:'',stateCode:''}];
+  if(state.batch.separatedItems&&state.batch.separatedItems.length){
+    rows.push({value:'__separated__',label:'PHIẾU VỊ THUỐC TÁCH RIÊNG',state:stateLabel(state.batch.separatedState),stateCode:state.batch.separatedState});
+  }
+  (state.batch.patients||[]).forEach(p=>{
+    const hay=norm(`${p.patientName} ${p.patientCode}`);if(q&&!hay.includes(q))return;
+    rows.push({value:p.voucherId,label:`${p.patientName} – ${p.patientCode}`,state:stateLabel(p.state),stateCode:p.state});
+  });
+  host.innerHTML=rows.map(x=>`<button type="button" class="patient-option ${String(x.value)===String(state.selectedPatient)?'active':''}" onclick="selectPatientFromMenuV123('${esc(x.value)}')"><span class="patient-option-main">${esc(x.label)}</span>${x.state?`<span class="patient-option-state ${dyPatientStateClassV132(x.stateCode)}">${esc(x.state)}</span>`:''}</button>`).join('')||'<div class="empty small" style="padding:14px">Không tìm thấy bệnh nhân.</div>';
+};
+
+let dyPatientPickerPortalReadyV132=false;
+let dyPatientPickerRafV132=0;
+function dyEnsurePatientPickerPortalV132(){
+  const menu=$('patientPickerMenu');if(!menu)return null;
+  if(!dyPatientPickerPortalReadyV132){
+    document.body.appendChild(menu);
+    menu.classList.add('dy-v132-portal');
+    menu.addEventListener('click',ev=>ev.stopPropagation());
+    menu.addEventListener('touchstart',ev=>ev.stopPropagation(),{passive:true});
+    dyPatientPickerPortalReadyV132=true;
+  }
+  return menu;
+}
+function dyVisualViewportV132(){
+  const vv=window.visualViewport;
+  return {top:vv?Number(vv.offsetTop||0):0,height:vv?Number(vv.height||window.innerHeight):Number(window.innerHeight||document.documentElement.clientHeight||0),width:vv?Number(vv.width||window.innerWidth):Number(window.innerWidth||document.documentElement.clientWidth||0)};
+}
+function dyPositionPatientPickerV132(){
+  dyPatientPickerRafV132=0;
+  const menu=$('patientPickerMenu'),btn=$('patientPickerButton'),list=$('patientOptionList');
+  if(!menu||!btn||!list||menu.classList.contains('hidden'))return;
+  const vp=dyVisualViewportV132();
+  const vTop=vp.top, vBottom=vp.top+vp.height, edge=8, gap=6;
+  const br=btn.getBoundingClientRect();
+  let safeBottom=vBottom-edge;
+  const nav=$('sequenceNav');
+  if(nav&&!nav.classList.contains('hidden')){
+    const nr=nav.getBoundingClientRect();
+    if(nr.top>vTop+edge&&nr.top<safeBottom)safeBottom=Math.min(safeBottom,nr.top-gap);
+  }
+  const width=Math.max(220,Math.min(br.width,vp.width-edge*2));
+  const left=Math.max(edge,Math.min(br.left,vp.width-edge-width));
+  menu.style.left=Math.round(left)+'px';menu.style.width=Math.round(width)+'px';menu.style.right='auto';menu.style.bottom='auto';
+
+  // Search không tự focus khi mở menu => không bật bàn phím che danh sách.
+  const searchBox=menu.querySelector('.patient-picker-search-box');
+  const searchH=Math.max(54,Math.ceil(searchBox?searchBox.getBoundingClientRect().height:54));
+  const desired=Math.min(560,searchH+Math.max(120,list.scrollHeight||120)+2);
+  const below=Math.max(0,safeBottom-(br.bottom+gap));
+  const above=Math.max(0,(br.top-gap)-(vTop+edge));
+  let top,height;
+  if(below>=Math.min(desired,220)||below>=above){
+    height=Math.max(80,Math.min(desired,below));
+    top=br.bottom+gap;
+  }else{
+    height=Math.max(80,Math.min(desired,above));
+    top=br.top-gap-height;
+  }
+  // Nếu cả hai phía đều quá hẹp, dùng toàn bộ vùng an toàn của viewport thay vì để menu chui dưới thanh công cụ.
+  if(Math.max(below,above)<150){
+    top=vTop+edge;
+    height=Math.max(80,safeBottom-top);
+  }
+  const maxHeight=Math.max(80,safeBottom-(vTop+edge));
+  height=Math.min(height,maxHeight);
+  top=Math.max(vTop+edge,Math.min(top,safeBottom-height));
+  menu.style.top=Math.round(top)+'px';
+  menu.style.height=Math.floor(height)+'px';
+  menu.style.maxHeight=Math.floor(height)+'px';
+  list.style.height=Math.max(32,Math.floor(height-searchH-2))+'px';
+  list.style.maxHeight='none';
+}
+function dySchedulePickerV132(){
+  if(dyPatientPickerRafV132)return;
+  dyPatientPickerRafV132=requestAnimationFrame(dyPositionPatientPickerV132);
+}
+togglePatientPickerMenu=function(force){
+  const menu=dyEnsurePatientPickerPortalV132(),btn=$('patientPickerButton');if(!menu||!btn)return;
+  const open=typeof force==='boolean'?force:menu.classList.contains('hidden');
+  menu.classList.toggle('hidden',!open);btn.classList.toggle('open',open);btn.setAttribute('aria-expanded',open?'true':'false');
+  document.body.classList.toggle('dy-v132-picker-open',open);
+  if(open){
+    dyRenderPatientOptionListV123();
+    // Cố ý KHÔNG focus ô tìm kiếm; người dùng chạm ô tìm kiếm khi thật sự cần tìm.
+    dySchedulePickerV132();
+  }else{
+    menu.style.height='';menu.style.maxHeight='';menu.style.top='';menu.style.left='';menu.style.width='';
+    const list=$('patientOptionList');if(list){list.style.height='';list.style.maxHeight=''}
+  }
+};
+
+// Chạm ngoài menu thì đóng; chạm/scroll trong menu không bị listener legacy đóng.
+document.addEventListener('pointerdown',ev=>{
+  const menu=$('patientPickerMenu'),btn=$('patientPickerButton');
+  if(!menu||menu.classList.contains('hidden'))return;
+  if(menu.contains(ev.target)||btn&&btn.contains(ev.target))return;
+  togglePatientPickerMenu(false);
+},true);
+window.addEventListener('resize',()=>{if(document.body.classList.contains('dy-v132-picker-open'))dySchedulePickerV132()},{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(()=>{if(document.body.classList.contains('dy-v132-picker-open'))dySchedulePickerV132()},100),{passive:true});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',()=>{if(document.body.classList.contains('dy-v132-picker-open'))dySchedulePickerV132()},{passive:true});
+  window.visualViewport.addEventListener('scroll',()=>{if(document.body.classList.contains('dy-v132-picker-open'))dySchedulePickerV132()},{passive:true});
+}
+/* ================= END V1.32 ================= */
 
 </script>
 </body>
